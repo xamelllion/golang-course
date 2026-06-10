@@ -19,7 +19,11 @@ type GithubRepo struct {
 }
 
 func (gr GithubRepo) String() string {
-	return fmt.Sprintf("%v:\n\tdescription: %v\n\tstart count: %v\n\tforks count: %v\n\tdate creation: %v\n", gr.Name, gr.Description, gr.StarsCount, gr.ForksCount, gr.CreationDate)
+	return fmt.Sprintf("%v:\n"+
+		"\tdescription: %v\n"+
+		"\tstart count: %v\n"+
+		"\tforks count: %v\n"+
+		"\tdate creation: %v\n", gr.Name, gr.Description, gr.StarsCount, gr.ForksCount, gr.CreationDate)
 }
 
 func makeGithubRequest(method, endpoint string) (*http.Response, error) {
@@ -76,7 +80,8 @@ func getRepo(repoName string) (GithubRepo, error) {
 
 func main() {
 	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stdout, "Usage: %v owner/repo\n\nTestApp is a cli tool that provide you information about repo\n", os.Args[0])
+		fmt.Fprintf(os.Stdout, "Usage: %v owner/repo\n\n"+
+			"TestApp is a cli tool that provide you information about repo\n", os.Args[0])
 		return
 	}
 
