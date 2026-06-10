@@ -47,10 +47,10 @@ func makeGithubRequest(method, endpoint string) (*http.Response, error) {
 
 func getRepo(repoName string) (GithubRepo, error) {
 	repoSplited := strings.Split(repoName, "/")
-	if len(repoSplited) != 2 || len(repoSplited[0]) == 0 || len(repoSplited[1]) == 0 {
+	if len(repoSplited) < 2 || len(repoSplited[len(repoSplited)-1]) == 0 || len(repoSplited[len(repoSplited)-2]) == 0 {
 		return GithubRepo{}, fmt.Errorf(`wrong repository name %v, must be "owner/repo"`, repoName)
 	}
-	owner, name := repoSplited[0], repoSplited[1]
+	owner, name := repoSplited[len(repoSplited)-2], repoSplited[len(repoSplited)-1]
 
 	res, err := makeGithubRequest(http.MethodGet, fmt.Sprintf("/repos/%v/%v", owner, name))
 	if err != nil {
