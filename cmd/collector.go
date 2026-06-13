@@ -5,8 +5,8 @@ import (
 	"errors"
 	"log"
 	"net"
-	"time"
 
+	"github.com/xamelllion/golang-course/internal/adapter"
 	pb "github.com/xamelllion/golang-course/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -14,6 +14,7 @@ import (
 
 type server struct {
 	pb.UnimplementedCollectorServiceServer
+	gh adapter.GithubRepositoryAdapter
 }
 
 func (s *server) GetRepository(ctx context.Context, req *pb.GetRepositoryRequest) (*pb.GetRepositoryResponse, error) {
@@ -21,12 +22,17 @@ func (s *server) GetRepository(ctx context.Context, req *pb.GetRepositoryRequest
 		return &pb.GetRepositoryResponse{}, errors.New("there is no owner or repo")
 	}
 
+	repo, error := s.gh.GetRepository(req.Owner, req.Repo)
+	if error != nil {
+		return &pb.GetRepositoryResponse{}, error
+	}
+
 	return &pb.GetRepositoryResponse{
-		Name:        "Homka",
-		Description: "Homka",
-		Stars:       2,
-		Forks:       2,
-		CreateDate:  timestamppb.New(time.Now()),
+		Name:        repo.Name,
+		Description: repo.Description,
+		Stars:       repo.Stars,
+		Forks:       repo.Forks,
+		CreateDate:  timestamppb.New(repo.Create_date),
 	}, nil
 }
 
@@ -37,7 +43,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterCollectorServiceServer(grpcServer, &server{})
+	pb.RegisterCollectorServiceServer(grpcServer, &server{gh: adapter.NewGithubRepositoryAdapter()})
 
 	log.Printf("grpc listen on 50051 port")
 
