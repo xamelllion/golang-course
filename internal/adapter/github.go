@@ -1,16 +1,25 @@
-package main
+package adapter
 
 import (
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"time"
+
+	"github.com/xamelllion/golang-course/internal/domain"
 )
 
-type GithubRepo struct {
+type GithubRepositoryAdapter interface {
+	GetRepository(owner, repo string) (domain.GithubRepository, error)
+}
+
+func NewGithubRepositoryAdapter() GithubRepositoryAdapter {
+	return &githubRepositoryAdapter{}
+}
+
+type githubRepo struct {
 	Name         string `json:"name"`
 	Description  string `json:"description"`
 	ForksCount   int    `json:"forks_count"`
@@ -18,7 +27,7 @@ type GithubRepo struct {
 	CreationDate string `json:"created_at"`
 }
 
-func (gr GithubRepo) String() string {
+func (gr githubRepo) String() string {
 	return fmt.Sprintf("%v:\n"+
 		"\tdescription: %v\n"+
 		"\tstart count: %v\n"+
@@ -45,51 +54,58 @@ func makeGithubRequest(method, endpoint string) (*http.Response, error) {
 	return res, nil
 }
 
-func getRepo(repoName string) (GithubRepo, error) {
+func getRepo(repoName string) (githubRepo, error) {
 	repoSplited := strings.Split(repoName, "/")
 	if len(repoSplited) < 2 || len(repoSplited[len(repoSplited)-1]) == 0 || len(repoSplited[len(repoSplited)-2]) == 0 {
-		return GithubRepo{}, fmt.Errorf(`wrong repository name %v, must be "owner/repo"`, repoName)
+		return githubRepo{}, fmt.Errorf(`wrong repository name %v, must be "owner/repo"`, repoName)
 	}
 	owner, name := repoSplited[len(repoSplited)-2], repoSplited[len(repoSplited)-1]
 
 	res, err := makeGithubRequest(http.MethodGet, fmt.Sprintf("/repos/%v/%v", owner, name))
 	if err != nil {
-		return GithubRepo{}, err
+		return githubRepo{}, err
 	}
 	if res.StatusCode == http.StatusNotFound {
-		return GithubRepo{}, fmt.Errorf(`there is no repo "%v"`, repoName)
+		return githubRepo{}, fmt.Errorf(`there is no repo "%v"`, repoName)
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return GithubRepo{}, fmt.Errorf("unexpected error while getting repo with status code %v\nres: %v", res.StatusCode, res)
+		return githubRepo{}, fmt.Errorf("unexpected error while getting repo with status code %v\nres: %v", res.StatusCode, res)
 	}
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		return GithubRepo{}, err
+		return githubRepo{}, err
 	}
 	defer res.Body.Close()
 
-	repo := GithubRepo{}
+	repo := githubRepo{}
 	if err := json.Unmarshal(data, &repo); err != nil {
-		return GithubRepo{}, err
+		return githubRepo{}, err
 	}
 
 	return repo, nil
 }
 
-func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stdout, "Usage: %v owner/repo\n\n"+
-			"TestApp is a cli tool that provide you information about repo\n", os.Args[0])
-		return
-	}
+type githubRepositoryAdapter struct {
+}
 
-	repo, err := getRepo(os.Args[1])
+func (gra *githubRepositoryAdapter) GetRepository(owner, repo string) (domain.GithubRepository, error) {
+	repoData, err := getRepo(fmt.Sprintf("%v/%v", owner, repo))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[Error] %v\n", err)
-		return
+		return domain.GithubRepository{}, err
 	}
 
-	fmt.Println(repo)
+	createDate, err := time.Parse(time.RFC3339, repoData.CreationDate)
+	if err != nil {
+		return domain.GithubRepository{}, fmt.Errorf("unexpected error while parsing date: %v", err)
+	}
+
+	return domain.GithubRepository{
+		Name:        repoData.Name,
+		Description: repoData.Description,
+		Stars:       int32(repoData.StarsCount),
+		Forks:       int32(repoData.ForksCount),
+		Create_date: createDate,
+	}, nil
 }
