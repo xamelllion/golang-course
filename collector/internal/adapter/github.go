@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xamelllion/golang-course/internal/domain"
+	"github.com/xamelllion/golang-course/collector/internal/domain"
 )
 
 type GithubRepositoryAdapter interface {

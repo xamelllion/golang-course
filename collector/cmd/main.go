@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/xamelllion/golang-course/internal/adapter"
+	"github.com/xamelllion/golang-course/collector/internal/adapter"
 	pb "github.com/xamelllion/golang-course/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
