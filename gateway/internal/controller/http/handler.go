@@ -25,15 +25,24 @@ func NewHandler(rp RepositoryUseCase) Handler {
 	}
 }
 
+func writeJSONError(w http.ResponseWriter, status int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"error": message,
+	})
+}
+
 func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "wrong method", http.StatusMethodNotAllowed)
+		writeJSONError(w, http.StatusMethodNotAllowed, "wrong method")
 		return
 	}
 
 	params := strings.Split(r.URL.Path[1:], "/")
 	if len(params) != 2 || params[0] == "" || params[1] == "" {
-		http.Error(w, "invalid repository path", http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
 		return
 	}
 
@@ -43,14 +52,14 @@ func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 	if error != nil {
 		switch apperror.CodeOf(error) {
 		case apperror.CodeNotFound:
-			http.Error(w, "not found", http.StatusNotFound)
+			writeJSONError(w, http.StatusNotFound, "not found")
 		case apperror.CodeInvalidArgument:
-			http.Error(w, "invalid owner or repo", http.StatusBadRequest)
+			writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
 		case apperror.CodeUnavailable:
-			http.Error(w, "unavailable github service", http.StatusBadGateway)
+			writeJSONError(w, http.StatusBadGateway, "unavailable github service")
 		default:
 			fmt.Fprintf(os.Stderr, "internal error: %v\n", error)
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			writeJSONError(w, http.StatusInternalServerError, "internal error")
 		}
 
 		return

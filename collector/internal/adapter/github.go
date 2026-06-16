@@ -49,7 +49,7 @@ func makeGithubRequest(method, endpoint string) (*http.Response, error) {
 
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, apperror.WrapCode(apperror.CodeInternal, "newtwork problem", err)
+		return nil, apperror.WrapCode(apperror.CodeUnavailable, "newtwork problem", err)
 	}
 
 	return res, nil
@@ -66,6 +66,8 @@ func getRepo(repoName string) (githubRepo, error) {
 	if err != nil {
 		return githubRepo{}, err
 	}
+	defer res.Body.Close()
+
 	if res.StatusCode == http.StatusNotFound {
 		return githubRepo{}, apperror.New(apperror.CodeNotFound, "not found repo")
 	}
@@ -78,7 +80,6 @@ func getRepo(repoName string) (githubRepo, error) {
 	if err != nil {
 		return githubRepo{}, apperror.Wrap("get repo", err)
 	}
-	defer res.Body.Close()
 
 	repo := githubRepo{}
 	if err := json.Unmarshal(data, &repo); err != nil {
