@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/xamelllion/golang-course/gateway/internal/domain"
+	apperror "github.com/xamelllion/golang-course/internal/errors"
 )
 
 type RepositoryUseCase interface {
@@ -40,10 +41,18 @@ func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 
 	repository, error := h.RepositoryUseCase.GetRepository(owner, repo)
 	if error != nil {
-		fmt.Fprintf(os.Stderr, "error: %s", error.Error())
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		_ = json.NewEncoder(w).Encode(map[string]string{"error": "internal error"})
+		switch apperror.CodeOf(error) {
+		case apperror.CodeNotFound:
+			http.Error(w, "not found", http.StatusNotFound)
+		case apperror.CodeInvalidArgument:
+			http.Error(w, "invalid owner or repo", http.StatusBadRequest)
+		case apperror.CodeUnavailable:
+			http.Error(w, "unavailable github service", http.StatusBadGateway)
+		default:
+			fmt.Fprintf(os.Stderr, "internal error: %v\n", error)
+			http.Error(w, "internal error", http.StatusInternalServerError)
+		}
+
 		return
 	}
 

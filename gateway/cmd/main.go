@@ -25,5 +25,6 @@ func main() {
 	handler := controller.NewHandler(repositoryUseCase)
 
 	http.HandleFunc("/", handler.GetRepository)
+	log.Printf("run server on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/xamelllion/golang-course/collector/internal/domain"
+	apperror "github.com/xamelllion/golang-course/internal/errors"
 )
 
 type GithubRepositoryAdapter interface {
@@ -37,18 +38,18 @@ func (gr githubRepo) String() string {
 
 func makeGithubRequest(method, endpoint string) (*http.Response, error) {
 	client := http.Client{
-		Timeout: time.Second * 2,
+		Timeout: time.Second * 10,
 	}
 	url := "https://api.github.com" + endpoint
 
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return nil, err
+		return nil, apperror.WrapCode(apperror.CodeInternal, "making request", err)
 	}
 
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, apperror.WrapCode(apperror.CodeInternal, "newtwork problem", err)
 	}
 
 	return res, nil
@@ -57,7 +58,7 @@ func makeGithubRequest(method, endpoint string) (*http.Response, error) {
 func getRepo(repoName string) (githubRepo, error) {
 	repoSplited := strings.Split(repoName, "/")
 	if len(repoSplited) < 2 || len(repoSplited[len(repoSplited)-1]) == 0 || len(repoSplited[len(repoSplited)-2]) == 0 {
-		return githubRepo{}, fmt.Errorf(`wrong repository name %v, must be "owner/repo"`, repoName)
+		return githubRepo{}, apperror.New(apperror.CodeInvalidArgument, "bad repo and owner arguments")
 	}
 	owner, name := repoSplited[len(repoSplited)-2], repoSplited[len(repoSplited)-1]
 
@@ -66,22 +67,22 @@ func getRepo(repoName string) (githubRepo, error) {
 		return githubRepo{}, err
 	}
 	if res.StatusCode == http.StatusNotFound {
-		return githubRepo{}, fmt.Errorf(`there is no repo "%v"`, repoName)
+		return githubRepo{}, apperror.New(apperror.CodeNotFound, "not found repo")
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return githubRepo{}, fmt.Errorf("unexpected error while getting repo with status code %v\nres: %v", res.StatusCode, res)
+		return githubRepo{}, apperror.New(apperror.CodeInternal, fmt.Sprintf("unexpected error while getting repo with status code %v\nres: %v", res.StatusCode, res))
 	}
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		return githubRepo{}, err
+		return githubRepo{}, apperror.Wrap("get repo", err)
 	}
 	defer res.Body.Close()
 
 	repo := githubRepo{}
 	if err := json.Unmarshal(data, &repo); err != nil {
-		return githubRepo{}, err
+		return githubRepo{}, apperror.Wrap("get repo:", err)
 	}
 
 	return repo, nil
@@ -98,7 +99,7 @@ func (gra *githubRepositoryAdapter) GetRepository(owner, repo string) (domain.Gi
 
 	createDate, err := time.Parse(time.RFC3339, repoData.CreationDate)
 	if err != nil {
-		return domain.GithubRepository{}, fmt.Errorf("unexpected error while parsing date: %v", err)
+		return domain.GithubRepository{}, apperror.Wrap("unexpected error while parsing date", err)
 	}
 
 	return domain.GithubRepository{
