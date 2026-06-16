@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 
 	"github.com/xamelllion/golang-course/collector/internal/adapter"
+	"github.com/xamelllion/golang-course/collector/internal/config"
 	apperror "github.com/xamelllion/golang-course/internal/errors"
 	pb "github.com/xamelllion/golang-course/proto"
 	"google.golang.org/grpc"
@@ -48,7 +50,8 @@ func (s *server) GetRepository(ctx context.Context, req *pb.GetRepositoryRequest
 }
 
 func main() {
-	listener, err := net.Listen("tcp", ":50051")
+	cfg := config.Load()
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Port))
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +59,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterCollectorServiceServer(grpcServer, &server{gh: adapter.NewGithubRepositoryAdapter()})
 
-	log.Printf("grpc listen on 50051 port")
+	log.Printf("grpc listen on %s port", cfg.Port)
 
 	if err := grpcServer.Serve(listener); err != nil {
 		panic(err)

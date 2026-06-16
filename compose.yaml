@@ -3,6 +3,8 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.collector
+        environment:
+            COLLECTOR_PORT: "50051"
         image: collector
         ports:
             - "50051:50051"
@@ -11,6 +13,9 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.gateway
+        environment:
+            COLLECTOR_ADDR: "collector:50051"
+            GATEWAY_PORT: "8080"
         image: gateway
         ports:
             - "8080:8080"
