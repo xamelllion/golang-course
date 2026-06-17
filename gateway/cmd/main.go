@@ -30,7 +30,7 @@ import (
 func main() {
 	cfg := config.Load()
 
-	conn, error := grpc.NewClient(cfg.CollectorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, error := grpc.NewClient(cfg.ProcessorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if error != nil {
 		panic(error)
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/xamelllion/golang-course/collector/internal/adapter"
 	"github.com/xamelllion/golang-course/collector/internal/config"
 	apperror "github.com/xamelllion/golang-course/internal/errors"
-	pb "github.com/xamelllion/golang-course/proto"
+	pb "github.com/xamelllion/golang-course/proto/collector"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

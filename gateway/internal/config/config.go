@@ -4,14 +4,14 @@ import "os"
 
 type Config struct {
 	Port          string
-	CollectorAddr string
+	ProcessorAddr string
 }
 
 func Load() Config {
 	var config Config
 
 	config.Port = getenv("GATEWAY_PORT", "8080")
-	config.CollectorAddr = getenv("COLLECTOR_ADDR", "localhost:50051")
+	config.ProcessorAddr = getenv("PROCESSOR_ADDR", "localhost:50051")
 
 	return config
 }
