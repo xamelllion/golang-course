@@ -76,11 +76,11 @@ func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.log.Debug("http: get request of %s/%s", owner, repo)
+	h.log.Debug("http: get request", "owner", owner, "repo", repo)
 
 	repository, error := h.RepositoryUseCase.GetRepository(owner, repo)
 	if error != nil {
-		h.log.Debug("http: error %v", error)
+		h.log.Debug("http: error", "error", error)
 		switch apperror.CodeOf(error) {
 		case apperror.CodeNotFound:
 			writeJSONError(w, http.StatusNotFound, "not found")
@@ -123,6 +123,7 @@ func (h *Handler) PingServices(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
 		writeJSONError(w, http.StatusInternalServerError, "internal error")
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

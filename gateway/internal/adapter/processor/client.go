@@ -37,7 +37,7 @@ func NewProcessor(cfg config.Config, log *slog.Logger) Processor {
 }
 
 func (p Processor) GetRepository(owner, repo string) (domain.Repository, error) {
-	p.log.Debug("adapter: get repositon of %s/%s", owner, repo)
+	p.log.Debug("adapter: get repositon", "owner", owner, "repo", repo)
 	repository, error := p.client.GetRepository(context.Background(), &pbProcessor.GetRepositoryRequest{Owner: owner, Repo: repo})
 	if error != nil {
 		switch status.Code(error) {

@@ -20,6 +20,6 @@ func NewRepositoryUseCase(collector Collector, log *slog.Logger) *RepositoryUseC
 }
 
 func (r *RepositoryUseCase) GetRepository(owner, repo string) (domain.Repository, error) {
-	r.log.Debug("usecase: get repository of %s/%s", owner, repo)
+	r.log.Debug("usecase: get repository", "owner", owner, "repo", repo)
 	return r.Collector.GetRepository(owner, repo)
 }
