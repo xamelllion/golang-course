@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	CollectorService_GetRepository_FullMethodName = "/collector.CollectorService/GetRepository"
+	CollectorService_Ping_FullMethodName          = "/collector.CollectorService/Ping"
 )
 
 // CollectorServiceClient is the client API for CollectorService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CollectorServiceClient interface {
 	GetRepository(ctx context.Context, in *GetRepositoryRequest, opts ...grpc.CallOption) (*GetRepositoryResponse, error)
+	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 }
 
 type collectorServiceClient struct {
@@ -47,11 +49,22 @@ func (c *collectorServiceClient) GetRepository(ctx context.Context, in *GetRepos
 	return out, nil
 }
 
+func (c *collectorServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PingResponse)
+	err := c.cc.Invoke(ctx, CollectorService_Ping_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CollectorServiceServer is the server API for CollectorService service.
 // All implementations must embed UnimplementedCollectorServiceServer
 // for forward compatibility.
 type CollectorServiceServer interface {
 	GetRepository(context.Context, *GetRepositoryRequest) (*GetRepositoryResponse, error)
+	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	mustEmbedUnimplementedCollectorServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedCollectorServiceServer struct{}
 
 func (UnimplementedCollectorServiceServer) GetRepository(context.Context, *GetRepositoryRequest) (*GetRepositoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRepository not implemented")
+}
+func (UnimplementedCollectorServiceServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Ping not implemented")
 }
 func (UnimplementedCollectorServiceServer) mustEmbedUnimplementedCollectorServiceServer() {}
 func (UnimplementedCollectorServiceServer) testEmbeddedByValue()                          {}
@@ -104,6 +120,24 @@ func _CollectorService_GetRepository_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CollectorService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CollectorServiceServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CollectorService_Ping_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CollectorServiceServer).Ping(ctx, req.(*PingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CollectorService_ServiceDesc is the grpc.ServiceDesc for CollectorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var CollectorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRepository",
 			Handler:    _CollectorService_GetRepository_Handler,
+		},
+		{
+			MethodName: "Ping",
+			Handler:    _CollectorService_Ping_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

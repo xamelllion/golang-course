@@ -28,8 +28,9 @@ func main() {
 	defer conn.Close()
 
 	collector := collector.NewCollector(conn)
-	usecase := usecase.NewRepositoryUseCase(collector)
-	server := controller.NewServer(usecase)
+	repositoryUsecase := usecase.NewRepositoryUseCase(collector)
+	pingUsecase := usecase.NewPingUsecase()
+	server := controller.NewServer(repositoryUsecase, pingUsecase)
 
 	grpcServer := grpc.NewServer()
 	pbProcessor.RegisterProcessorServiceServer(grpcServer, server)

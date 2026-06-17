@@ -41,6 +41,6 @@ services:
             dockerfile: Dockerfile.subscriber
         environment:
             SUBSCRIBER_PORT: "50053"
-        image: processor
+        image: subscriber
         ports:
             - "50053:50053"

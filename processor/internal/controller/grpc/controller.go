@@ -15,13 +15,18 @@ type RepositoryUsecase interface {
 	GetRepository(owner, repo string) (domain.Repository, error)
 }
 
+type PingUsecase interface {
+	Ping() (string, error)
+}
+
 type Server struct {
 	pbProcessor.UnimplementedProcessorServiceServer
 	RepositoryUsecase RepositoryUsecase
+	PingUsecase       PingUsecase
 }
 
-func NewServer(usecase RepositoryUsecase) *Server {
-	return &Server{RepositoryUsecase: usecase}
+func NewServer(repositoryUsecase RepositoryUsecase, pingUsecase PingUsecase) *Server {
+	return &Server{RepositoryUsecase: repositoryUsecase, PingUsecase: pingUsecase}
 }
 
 func (s *Server) GetRepository(_ context.Context, req *pbProcessor.GetRepositoryRequest) (*pbProcessor.GetRepositoryResponse, error) {
@@ -50,4 +55,10 @@ func (s *Server) GetRepository(_ context.Context, req *pbProcessor.GetRepository
 		Forks:       repo.Forks,
 		CreateDate:  timestamppb.New(repo.CreateDate),
 	}, nil
+}
+
+func (s *Server) Ping(_ context.Context, req *pbProcessor.PingRequest) (*pbProcessor.PingResponse, error) {
+	pong, err := s.PingUsecase.Ping()
+
+	return &pbProcessor.PingResponse{Reply: pong}, err
 }

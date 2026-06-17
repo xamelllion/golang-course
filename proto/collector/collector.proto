@@ -8,6 +8,7 @@ option go_package = "github.com/xamelllion/golang-course/proto/collector";
 
 service CollectorService {
   rpc GetRepository(GetRepositoryRequest) returns (GetRepositoryResponse);
+  rpc Ping(PingRequest) returns (PingResponse);
 }
 
 message GetRepositoryRequest {
@@ -21,4 +22,10 @@ message GetRepositoryResponse {
   int32 stars = 3;
   int32 forks = 4;
   google.protobuf.Timestamp create_date = 5;
+}
+
+message PingRequest {}
+
+message PingResponse {
+  string reply = 1;
 }

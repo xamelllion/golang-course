@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	ProcessorService_GetRepository_FullMethodName = "/processor.ProcessorService/GetRepository"
+	ProcessorService_Ping_FullMethodName          = "/processor.ProcessorService/Ping"
 )
 
 // ProcessorServiceClient is the client API for ProcessorService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProcessorServiceClient interface {
 	GetRepository(ctx context.Context, in *GetRepositoryRequest, opts ...grpc.CallOption) (*GetRepositoryResponse, error)
+	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 }
 
 type processorServiceClient struct {
@@ -47,11 +49,22 @@ func (c *processorServiceClient) GetRepository(ctx context.Context, in *GetRepos
 	return out, nil
 }
 
+func (c *processorServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PingResponse)
+	err := c.cc.Invoke(ctx, ProcessorService_Ping_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProcessorServiceServer is the server API for ProcessorService service.
 // All implementations must embed UnimplementedProcessorServiceServer
 // for forward compatibility.
 type ProcessorServiceServer interface {
 	GetRepository(context.Context, *GetRepositoryRequest) (*GetRepositoryResponse, error)
+	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	mustEmbedUnimplementedProcessorServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedProcessorServiceServer struct{}
 
 func (UnimplementedProcessorServiceServer) GetRepository(context.Context, *GetRepositoryRequest) (*GetRepositoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRepository not implemented")
+}
+func (UnimplementedProcessorServiceServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Ping not implemented")
 }
 func (UnimplementedProcessorServiceServer) mustEmbedUnimplementedProcessorServiceServer() {}
 func (UnimplementedProcessorServiceServer) testEmbeddedByValue()                          {}
@@ -104,6 +120,24 @@ func _ProcessorService_GetRepository_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProcessorService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProcessorServiceServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ProcessorService_Ping_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProcessorServiceServer).Ping(ctx, req.(*PingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProcessorService_ServiceDesc is the grpc.ServiceDesc for ProcessorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var ProcessorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRepository",
 			Handler:    _ProcessorService_GetRepository_Handler,
+		},
+		{
+			MethodName: "Ping",
+			Handler:    _ProcessorService_Ping_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

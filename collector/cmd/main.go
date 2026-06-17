@@ -49,6 +49,10 @@ func (s *server) GetRepository(ctx context.Context, req *pb.GetRepositoryRequest
 	}, nil
 }
 
+func (s *server) Ping(_ context.Context, req *pb.PingRequest) (*pb.PingResponse, error) {
+	return &pb.PingResponse{Reply: "pong"}, nil
+}
+
 func main() {
 	cfg := config.Load()
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Port))
