@@ -2,18 +2,17 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v7.35.0
-// source: proto/collector.proto
+// source: proto/collector/collector.proto
 
-package proto
+package collector
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -33,7 +32,7 @@ type GetRepositoryRequest struct {
 
 func (x *GetRepositoryRequest) Reset() {
 	*x = GetRepositoryRequest{}
-	mi := &file_proto_collector_proto_msgTypes[0]
+	mi := &file_proto_collector_collector_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45,7 +44,7 @@ func (x *GetRepositoryRequest) String() string {
 func (*GetRepositoryRequest) ProtoMessage() {}
 
 func (x *GetRepositoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_collector_proto_msgTypes[0]
+	mi := &file_proto_collector_collector_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,7 +57,7 @@ func (x *GetRepositoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepositoryRequest.ProtoReflect.Descriptor instead.
 func (*GetRepositoryRequest) Descriptor() ([]byte, []int) {
-	return file_proto_collector_proto_rawDescGZIP(), []int{0}
+	return file_proto_collector_collector_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *GetRepositoryRequest) GetOwner() string {
@@ -88,7 +87,7 @@ type GetRepositoryResponse struct {
 
 func (x *GetRepositoryResponse) Reset() {
 	*x = GetRepositoryResponse{}
-	mi := &file_proto_collector_proto_msgTypes[1]
+	mi := &file_proto_collector_collector_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -100,7 +99,7 @@ func (x *GetRepositoryResponse) String() string {
 func (*GetRepositoryResponse) ProtoMessage() {}
 
 func (x *GetRepositoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_collector_proto_msgTypes[1]
+	mi := &file_proto_collector_collector_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -113,7 +112,7 @@ func (x *GetRepositoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepositoryResponse.ProtoReflect.Descriptor instead.
 func (*GetRepositoryResponse) Descriptor() ([]byte, []int) {
-	return file_proto_collector_proto_rawDescGZIP(), []int{1}
+	return file_proto_collector_collector_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetRepositoryResponse) GetName() string {
@@ -151,11 +150,11 @@ func (x *GetRepositoryResponse) GetCreateDate() *timestamppb.Timestamp {
 	return nil
 }
 
-var File_proto_collector_proto protoreflect.FileDescriptor
+var File_proto_collector_collector_proto protoreflect.FileDescriptor
 
-const file_proto_collector_proto_rawDesc = "" +
+const file_proto_collector_collector_proto_rawDesc = "" +
 	"\n" +
-	"\x15proto/collector.proto\x12\tcollector\x1a\x1fgoogle/protobuf/timestamp.proto\"@\n" +
+	"\x1fproto/collector/collector.proto\x12\tcollector\x1a\x1fgoogle/protobuf/timestamp.proto\"@\n" +
 	"\x14GetRepositoryRequest\x12\x14\n" +
 	"\x05owner\x18\x01 \x01(\tR\x05owner\x12\x12\n" +
 	"\x04repo\x18\x02 \x01(\tR\x04repo\"\xb6\x01\n" +
@@ -167,27 +166,27 @@ const file_proto_collector_proto_rawDesc = "" +
 	"\vcreate_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"createDate2f\n" +
 	"\x10CollectorService\x12R\n" +
-	"\rGetRepository\x12\x1f.collector.GetRepositoryRequest\x1a .collector.GetRepositoryResponseB$Z\"github.com/xamelllion/golang-course/protob\x06proto3"
+	"\rGetRepository\x12\x1f.collector.GetRepositoryRequest\x1a .collector.GetRepositoryResponseB.Z,github.com/xamelllion/golang-course/proto/collectorb\x06proto3"
 
 var (
-	file_proto_collector_proto_rawDescOnce sync.Once
-	file_proto_collector_proto_rawDescData []byte
+	file_proto_collector_collector_proto_rawDescOnce sync.Once
+	file_proto_collector_collector_proto_rawDescData []byte
 )
 
-func file_proto_collector_proto_rawDescGZIP() []byte {
-	file_proto_collector_proto_rawDescOnce.Do(func() {
-		file_proto_collector_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_collector_proto_rawDesc), len(file_proto_collector_proto_rawDesc)))
+func file_proto_collector_collector_proto_rawDescGZIP() []byte {
+	file_proto_collector_collector_proto_rawDescOnce.Do(func() {
+		file_proto_collector_collector_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_collector_collector_proto_rawDesc), len(file_proto_collector_collector_proto_rawDesc)))
 	})
-	return file_proto_collector_proto_rawDescData
+	return file_proto_collector_collector_proto_rawDescData
 }
 
-var file_proto_collector_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_proto_collector_proto_goTypes = []any{
+var file_proto_collector_collector_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_collector_collector_proto_goTypes = []any{
 	(*GetRepositoryRequest)(nil),  // 0: collector.GetRepositoryRequest
 	(*GetRepositoryResponse)(nil), // 1: collector.GetRepositoryResponse
 	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
 }
-var file_proto_collector_proto_depIdxs = []int32{
+var file_proto_collector_collector_proto_depIdxs = []int32{
 	2, // 0: collector.GetRepositoryResponse.create_date:type_name -> google.protobuf.Timestamp
 	0, // 1: collector.CollectorService.GetRepository:input_type -> collector.GetRepositoryRequest
 	1, // 2: collector.CollectorService.GetRepository:output_type -> collector.GetRepositoryResponse
@@ -198,26 +197,26 @@ var file_proto_collector_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_proto_collector_proto_init() }
-func file_proto_collector_proto_init() {
-	if File_proto_collector_proto != nil {
+func init() { file_proto_collector_collector_proto_init() }
+func file_proto_collector_collector_proto_init() {
+	if File_proto_collector_collector_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_collector_proto_rawDesc), len(file_proto_collector_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_collector_collector_proto_rawDesc), len(file_proto_collector_collector_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_collector_proto_goTypes,
-		DependencyIndexes: file_proto_collector_proto_depIdxs,
-		MessageInfos:      file_proto_collector_proto_msgTypes,
+		GoTypes:           file_proto_collector_collector_proto_goTypes,
+		DependencyIndexes: file_proto_collector_collector_proto_depIdxs,
+		MessageInfos:      file_proto_collector_collector_proto_msgTypes,
 	}.Build()
-	File_proto_collector_proto = out.File
-	file_proto_collector_proto_goTypes = nil
-	file_proto_collector_proto_depIdxs = nil
+	File_proto_collector_collector_proto = out.File
+	file_proto_collector_collector_proto_goTypes = nil
+	file_proto_collector_collector_proto_depIdxs = nil
 }
