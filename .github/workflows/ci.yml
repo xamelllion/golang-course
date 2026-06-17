@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-start:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.x"
+          cache-dependency-path: go.sum
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Build compose services
+        run: docker compose build
+
+      - name: Start compose services
+        run: docker compose up -d
+
+      - name: Wait for gateway
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://localhost:8080/docs/swagger/doc.json >/dev/null; then
+              exit 0
+            fi
+
+            docker compose ps
+            sleep 2
+          done
+
+          docker compose logs
+          exit 1
+
+      - name: Check services are running
+        run: |
+          docker compose ps
+          docker compose ps --services --status running | grep -qx collector
+          docker compose ps --services --status running | grep -qx gateway
+
+      - name: Show compose logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop compose services
+        if: always()
+        run: docker compose down --volumes --remove-orphans
