@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
+	_ "github.com/xamelllion/golang-course/docs"
 	"github.com/xamelllion/golang-course/gateway/internal/domain"
 	apperror "github.com/xamelllion/golang-course/internal/errors"
 )
@@ -34,19 +34,38 @@ func writeJSONError(w http.ResponseWriter, status int, message string) {
 	})
 }
 
+// GetRepository godoc
+//
+//	@Summary		Get repository by owner and repo name
+//	@Description	get repo by owner\repo
+//	@ID				get-repo-by-owner-repo
+//	@Tags			repo
+//	@Accept			json
+//	@Produce		json
+//	@Param			repo	path		string	true	"Repo name"
+//	@Param			owner	path		string	true	"Owner name"
+//	@Success		200		{object}	domain.Repository
+//	@Failure		400		{object}	controller.GetRepository.HTTPError
+//	@Failure		404		{object}	controller.GetRepository.HTTPError
+//	@Failure		500		{object}	controller.GetRepository.HTTPError
+//	@Router			/repo/{owner}/{repo} [get]
 func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
+	type HTTPError struct {
+		Err string `json:"error" example:"some error"`
+	}
+
 	if r.Method != http.MethodGet {
 		writeJSONError(w, http.StatusMethodNotAllowed, "wrong method")
 		return
 	}
 
-	params := strings.Split(r.URL.Path[1:], "/")
-	if len(params) != 2 || params[0] == "" || params[1] == "" {
+	owner := r.PathValue("owner")
+	repo := r.PathValue("repo")
+
+	if owner == "" || repo == "" {
 		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
 		return
 	}
-
-	owner, repo := params[0], params[1]
 
 	repository, error := h.RepositoryUseCase.GetRepository(owner, repo)
 	if error != nil {

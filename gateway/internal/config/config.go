@@ -3,7 +3,7 @@ package config
 import "os"
 
 type Config struct {
-	Port           string
+	Port          string
 	CollectorAddr string
 }
 

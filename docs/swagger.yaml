@@ -1,0 +1,68 @@
+definitions:
+  controller.GetRepository.HTTPError:
+    properties:
+      error:
+        example: some error
+        type: string
+    type: object
+  domain.Repository:
+    properties:
+      create_date:
+        example: "2026-03-03T16:45:04Z"
+        type: string
+      description:
+        example: xamelllion's repo
+        type: string
+      forks:
+        example: 2
+        type: integer
+      name:
+        example: xamelllion
+        type: string
+      stars:
+        example: 122
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /repo/{owner}/{repo}:
+    get:
+      consumes:
+      - application/json
+      description: get repo by owner\repo
+      operationId: get-repo-by-owner-repo
+      parameters:
+      - description: Repo name
+        in: path
+        name: repo
+        required: true
+        type: string
+      - description: Owner name
+        in: path
+        name: owner
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Repository'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.GetRepository.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controller.GetRepository.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.GetRepository.HTTPError'
+      summary: Get repository by owner and repo name
+      tags:
+      - repo
+swagger: "2.0"
