@@ -34,3 +34,13 @@ services:
             - "50051:50051"
         depends_on:
             - collector
+
+    subscriber:
+        build:
+            context: .
+            dockerfile: Dockerfile.subscriber
+        environment:
+            SUBSCRIBER_PORT: "50053"
+        image: processor
+        ports:
+            - "50053:50053"
