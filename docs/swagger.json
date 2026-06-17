@@ -1,9 +1,51 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "title": "TestApp API",
+        "contact": {
+            "name": "Xamelllion",
+            "url": "t.me/xamelllion",
+            "email": "me@xamelllion.ru"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://mit-license.org/"
+        },
+        "version": "0.1"
     },
+    "host": "localhost:8080",
+    "basePath": "/",
     "paths": {
+        "/api/ping": {
+            "get": {
+                "description": "get status of services",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "service"
+                ],
+                "summary": "Get status of services",
+                "operationId": "get-status-of-services",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ServicesInfo"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ServicesInfo"
+                        }
+                    }
+                }
+            }
+        },
         "/repo/{owner}/{repo}": {
             "get": {
                 "description": "get repo by owner\\repo",
@@ -73,6 +115,17 @@
                 }
             }
         },
+        "domain.PingStatus": {
+            "type": "string",
+            "enum": [
+                "up",
+                "down"
+            ],
+            "x-enum-varnames": [
+                "PingStatusUp",
+                "PingStatusDown"
+            ]
+        },
         "domain.Repository": {
             "type": "object",
             "properties": {
@@ -97,6 +150,42 @@
                     "example": 122
                 }
             }
+        },
+        "domain.ServiceStatus": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.PingStatus"
+                }
+            }
+        },
+        "domain.ServicesInfo": {
+            "type": "object",
+            "properties": {
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.ServiceStatus"
+                    }
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.ServicesStatus"
+                }
+            }
+        },
+        "domain.ServicesStatus": {
+            "type": "string",
+            "enum": [
+                "ok",
+                "degraded"
+            ],
+            "x-enum-varnames": [
+                "ServicesStatusOk",
+                "ServicesStatusDegraded"
+            ]
         }
     }
 }

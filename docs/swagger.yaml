@@ -1,3 +1,4 @@
+basePath: /
 definitions:
   controller.GetRepository.HTTPError:
     properties:
@@ -5,6 +6,14 @@ definitions:
         example: some error
         type: string
     type: object
+  domain.PingStatus:
+    enum:
+    - up
+    - down
+    type: string
+    x-enum-varnames:
+    - PingStatusUp
+    - PingStatusDown
   domain.Repository:
     properties:
       create_date:
@@ -23,9 +32,62 @@ definitions:
         example: 122
         type: integer
     type: object
+  domain.ServiceStatus:
+    properties:
+      name:
+        type: string
+      status:
+        $ref: '#/definitions/domain.PingStatus'
+    type: object
+  domain.ServicesInfo:
+    properties:
+      services:
+        items:
+          $ref: '#/definitions/domain.ServiceStatus'
+        type: array
+      status:
+        $ref: '#/definitions/domain.ServicesStatus'
+    type: object
+  domain.ServicesStatus:
+    enum:
+    - ok
+    - degraded
+    type: string
+    x-enum-varnames:
+    - ServicesStatusOk
+    - ServicesStatusDegraded
+host: localhost:8080
 info:
-  contact: {}
+  contact:
+    email: me@xamelllion.ru
+    name: Xamelllion
+    url: t.me/xamelllion
+  license:
+    name: MIT
+    url: https://mit-license.org/
+  title: TestApp API
+  version: "0.1"
 paths:
+  /api/ping:
+    get:
+      consumes:
+      - application/json
+      description: get status of services
+      operationId: get-status-of-services
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.ServicesInfo'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/domain.ServicesInfo'
+      summary: Get status of services
+      tags:
+      - service
   /repo/{owner}/{repo}:
     get:
       consumes:

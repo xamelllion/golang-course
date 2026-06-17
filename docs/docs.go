@@ -9,12 +9,50 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "Xamelllion",
+            "url": "t.me/xamelllion",
+            "email": "me@xamelllion.ru"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://mit-license.org/"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/ping": {
+            "get": {
+                "description": "get status of services",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "service"
+                ],
+                "summary": "Get status of services",
+                "operationId": "get-status-of-services",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ServicesInfo"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ServicesInfo"
+                        }
+                    }
+                }
+            }
+        },
         "/repo/{owner}/{repo}": {
             "get": {
                 "description": "get repo by owner\\repo",
@@ -84,6 +122,17 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.PingStatus": {
+            "type": "string",
+            "enum": [
+                "up",
+                "down"
+            ],
+            "x-enum-varnames": [
+                "PingStatusUp",
+                "PingStatusDown"
+            ]
+        },
         "domain.Repository": {
             "type": "object",
             "properties": {
@@ -108,17 +157,53 @@ const docTemplate = `{
                     "example": 122
                 }
             }
+        },
+        "domain.ServiceStatus": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.PingStatus"
+                }
+            }
+        },
+        "domain.ServicesInfo": {
+            "type": "object",
+            "properties": {
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.ServiceStatus"
+                    }
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.ServicesStatus"
+                }
+            }
+        },
+        "domain.ServicesStatus": {
+            "type": "string",
+            "enum": [
+                "ok",
+                "degraded"
+            ],
+            "x-enum-varnames": [
+                "ServicesStatusOk",
+                "ServicesStatusDegraded"
+            ]
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "0.1",
+	Host:             "localhost:8080",
+	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "",
+	Title:            "TestApp API",
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
