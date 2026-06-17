@@ -6,13 +6,13 @@ import (
 	"net/http"
 
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/collector"
+	"github.com/xamelllion/golang-course/gateway/internal/adapter/processor"
+	"github.com/xamelllion/golang-course/gateway/internal/adapter/subscriber"
 	"github.com/xamelllion/golang-course/gateway/internal/config"
 	controller "github.com/xamelllion/golang-course/gateway/internal/controller/http"
 	"github.com/xamelllion/golang-course/gateway/internal/usecase"
 	"github.com/xamelllion/golang-course/internal/logger"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 //	@title		TestApp API
@@ -26,27 +26,29 @@ import (
 //	@license.url	https://mit-license.org/
 
 //	@host		localhost:8080
-//	@BasePath	/api/v1
+//	@BasePath	/
 
 func main() {
 	cfg := config.Load()
 	logger := logger.Load("DEBUG")
 
-	conn, error := grpc.NewClient(cfg.ProcessorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if error != nil {
-		panic(error)
-	}
-	defer conn.Close()
+	processor := processor.NewProcessor(cfg, logger)
+	collector := collector.NewCollector(cfg, logger)
+	subscriber := subscriber.NewSubscriber(cfg, logger)
 
-	collector := collector.NewCollector(conn, logger)
+	repositoryUseCase := usecase.NewRepositoryUseCase(processor, logger)
+	pingUseCase := usecase.NewPingUsecase(map[string]usecase.Pinger{
+		"collector":  collector,
+		"processor":  processor,
+		"subscriber": subscriber,
+	}, logger)
 
-	repositoryUseCase := usecase.NewRepositoryUseCase(collector, logger)
-
-	handler := controller.NewHandler(repositoryUseCase, logger)
+	handler := controller.NewHandler(repositoryUseCase, pingUseCase, logger)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/docs/swagger/", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://localhost:%s/docs/swagger/doc.json", cfg.Port))))
 	mux.HandleFunc("/repo/{owner}/{repo}", handler.GetRepository)
+	mux.HandleFunc("/api/ping", handler.PingServices)
 
 	log.Printf("run server on %s port\n", cfg.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), mux))

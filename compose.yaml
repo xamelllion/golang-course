@@ -15,12 +15,16 @@ services:
             dockerfile: Dockerfile.gateway
         environment:
             PROCESSOR_ADDR: "processor:50051"
+            COLLECTOR_ADDR: "collector:50052"
+            SUBSCRIBER_ADDR: "subscriber:50053"
             GATEWAY_PORT: "8080"
         image: gateway
         ports:
             - "8080:8080"
         depends_on:
             - processor
+            - collector
+            - subscriber
 
     processor:
         build:

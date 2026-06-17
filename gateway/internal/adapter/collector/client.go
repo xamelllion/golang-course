@@ -4,51 +4,44 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/xamelllion/golang-course/gateway/internal/domain"
+	"github.com/xamelllion/golang-course/gateway/internal/config"
 	apperror "github.com/xamelllion/golang-course/internal/errors"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/credentials/insecure"
 
-	pbProcessor "github.com/xamelllion/golang-course/proto/processor"
+	pbCollector "github.com/xamelllion/golang-course/proto/collector"
 )
 
 type Collector struct {
-	conn *grpc.ClientConn
-	log  *slog.Logger
+	conn   *grpc.ClientConn
+	client pbCollector.CollectorServiceClient
+	log    *slog.Logger
 }
 
-func NewCollector(conn *grpc.ClientConn, log *slog.Logger) Collector {
-	return Collector{
-		conn: conn,
-		log:  log,
-	}
-}
-
-func (c Collector) GetRepository(owner, repo string) (domain.Repository, error) {
-	client := pbProcessor.NewProcessorServiceClient(c.conn)
-
-	c.log.Debug("adapter: get repositon of %s/%s", owner, repo)
-	repository, error := client.GetRepository(context.Background(), &pbProcessor.GetRepositoryRequest{Owner: owner, Repo: repo})
+func NewCollector(cfg config.Config, log *slog.Logger) Collector {
+	conn, error := grpc.NewClient(cfg.CollectorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if error != nil {
-		c.log.Debug("adapter: error %v", error)
-		switch status.Code(error) {
-		case codes.NotFound:
-			return domain.Repository{}, apperror.New(apperror.CodeNotFound, error.Error())
-		case codes.InvalidArgument:
-			return domain.Repository{}, apperror.New(apperror.CodeInvalidArgument, error.Error())
-		case codes.Unavailable:
-			return domain.Repository{}, apperror.New(apperror.CodeUnavailable, error.Error())
-		default:
-			return domain.Repository{}, apperror.New(apperror.CodeInternal, error.Error())
-		}
+		panic(error)
 	}
 
-	return domain.Repository{
-		Name:        repository.Name,
-		Description: repository.Description,
-		Stars:       repository.Stars,
-		Forks:       repository.Forks,
-		CreateDate:  repository.CreateDate.AsTime(),
-	}, nil
+	client := pbCollector.NewCollectorServiceClient(conn)
+
+	return Collector{
+		conn:   conn,
+		client: client,
+		log:    log,
+	}
+}
+
+func (c Collector) Ping() (string, error) {
+	pong, err := c.client.Ping(context.Background(), &pbCollector.PingRequest{})
+	if err != nil {
+		return "", apperror.New(apperror.CodeUnavailable, "processor unvailable")
+	}
+
+	return pong.Reply, nil
+}
+
+func (c Collector) Close() {
+	c.conn.Close()
 }
