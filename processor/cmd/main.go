@@ -28,7 +28,7 @@ func main() {
 	defer conn.Close()
 
 	collector := collector.NewCollector(conn)
-	repositoryUsecase := usecase.NewRepositoryUseCase(collector)
+	repositoryUsecase := usecase.NewRepositoryUsecase(collector)
 	pingUsecase := usecase.NewPingUsecase()
 	server := controller.NewServer(repositoryUsecase, pingUsecase)
 

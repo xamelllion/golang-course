@@ -1,7 +1,6 @@
 package usecase
 
 type PingUsecase struct {
-	Collector Collector
 }
 
 func NewPingUsecase() PingUsecase {

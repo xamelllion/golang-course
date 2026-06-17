@@ -10,7 +10,7 @@ type RepositoryUseCase struct {
 	Collector Collector
 }
 
-func NewRepositoryUseCase(collector Collector) *RepositoryUseCase {
+func NewRepositoryUsecase(collector Collector) *RepositoryUseCase {
 	return &RepositoryUseCase{Collector: collector}
 }
 

@@ -59,6 +59,9 @@ func (s *Server) GetRepository(_ context.Context, req *pbProcessor.GetRepository
 
 func (s *Server) Ping(_ context.Context, req *pbProcessor.PingRequest) (*pbProcessor.PingResponse, error) {
 	pong, err := s.PingUsecase.Ping()
+	if err != nil {
+		return nil, err
+	}
 
-	return &pbProcessor.PingResponse{Reply: pong}, err
+	return &pbProcessor.PingResponse{Reply: pong}, nil
 }
