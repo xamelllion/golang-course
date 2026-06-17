@@ -44,8 +44,10 @@ jobs:
       - name: Check services are running
         run: |
           docker compose ps
-          docker compose ps --services --status running | grep -qx collector
           docker compose ps --services --status running | grep -qx gateway
+          docker compose ps --services --status running | grep -qx processor
+          docker compose ps --services --status running | grep -qx collector
+          docker compose ps --services --status running | grep -qx subscriber
 
       - name: Show compose logs on failure
         if: failure()
