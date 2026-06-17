@@ -44,6 +44,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/domain.ServicesInfo"
                         }
                     },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
@@ -53,9 +59,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/repo/{owner}/{repo}": {
+        "/api/repositories/info": {
             "get": {
-                "description": "get repo by owner\\repo",
+                "description": "get repository information by GitHub repository URL",
                 "consumes": [
                     "application/json"
                 ],
@@ -65,21 +71,14 @@ const docTemplate = `{
                 "tags": [
                     "repo"
                 ],
-                "summary": "Get repository by owner and repo name",
+                "summary": "Get repository by GitHub URL",
                 "operationId": "get-repo-by-owner-repo",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Repo name",
-                        "name": "repo",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Owner name",
-                        "name": "owner",
-                        "in": "path",
+                        "description": "GitHub repository URL",
+                        "name": "url",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -104,6 +103,12 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
                         "schema": {
                             "$ref": "#/definitions/controller.GetRepository.HTTPError"
                         }

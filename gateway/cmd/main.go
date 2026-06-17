@@ -47,7 +47,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/docs/swagger/", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://localhost:%s/docs/swagger/doc.json", cfg.Port))))
-	mux.HandleFunc("/repo/{owner}/{repo}", handler.GetRepository)
+	mux.HandleFunc("/api/repositories/info", handler.GetRepository)
 	mux.HandleFunc("/api/ping", handler.PingServices)
 
 	log.Printf("run server on %s port\n", cfg.Port)

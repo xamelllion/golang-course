@@ -81,6 +81,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/domain.ServicesInfo'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.GetRepository.HTTPError'
         "503":
           description: Service Unavailable
           schema:
@@ -88,21 +92,16 @@ paths:
       summary: Get status of services
       tags:
       - service
-  /repo/{owner}/{repo}:
+  /api/repositories/info:
     get:
       consumes:
       - application/json
-      description: get repo by owner\repo
+      description: get repository information by GitHub repository URL
       operationId: get-repo-by-owner-repo
       parameters:
-      - description: Repo name
-        in: path
-        name: repo
-        required: true
-        type: string
-      - description: Owner name
-        in: path
-        name: owner
+      - description: GitHub repository URL
+        in: query
+        name: url
         required: true
         type: string
       produces:
@@ -124,7 +123,11 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/controller.GetRepository.HTTPError'
-      summary: Get repository by owner and repo name
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/controller.GetRepository.HTTPError'
+      summary: Get repository by GitHub URL
       tags:
       - repo
 swagger: "2.0"

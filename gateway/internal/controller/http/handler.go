@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 
 	_ "github.com/xamelllion/golang-course/docs"
 	"github.com/xamelllion/golang-course/gateway/internal/domain"
@@ -45,19 +47,19 @@ func writeJSONError(w http.ResponseWriter, status int, message string) {
 
 // GetRepository godoc
 //
-//	@Summary		Get repository by owner and repo name
-//	@Description	get repo by owner\repo
+//	@Summary		Get repository by GitHub URL
+//	@Description	get repository information by GitHub repository URL
 //	@ID				get-repo-by-owner-repo
 //	@Tags			repo
 //	@Accept			json
 //	@Produce		json
-//	@Param			repo	path		string	true	"Repo name"
-//	@Param			owner	path		string	true	"Owner name"
+//	@Param			url	query		string	true	"GitHub repository URL"
 //	@Success		200		{object}	domain.Repository
 //	@Failure		400		{object}	controller.GetRepository.HTTPError
 //	@Failure		404		{object}	controller.GetRepository.HTTPError
+//	@Failure		502		{object}	controller.GetRepository.HTTPError
 //	@Failure		500		{object}	controller.GetRepository.HTTPError
-//	@Router			/repo/{owner}/{repo} [get]
+//	@Router			/api/repositories/info [get]
 func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 	type HTTPError struct {
 		Err string `json:"error" example:"some error"`
@@ -68,8 +70,40 @@ func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	owner := r.PathValue("owner")
-	repo := r.PathValue("repo")
+	githubURLstring := r.URL.Query().Get("url")
+	if githubURLstring == "" {
+		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+		return
+	}
+
+	githubURL, err := url.Parse(githubURLstring)
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+		return
+	}
+
+	if githubURL.Host != "github.com" {
+		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+		return
+	}
+
+	if githubURL.Path == "" {
+		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+		return
+	}
+
+	if githubURL.Path[0] == '/' {
+		githubURL.Path = githubURL.Path[1:]
+	}
+
+	params := strings.Split(githubURL.Path, "/")
+	if len(params) < 2 {
+		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+		return
+	}
+
+	owner := params[0]
+	repo := params[1]
 
 	if owner == "" || repo == "" {
 		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
@@ -111,6 +145,7 @@ func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 //	@Produce		json
 //	@Success		200		{object}	domain.ServicesInfo
 //	@Failure		503		{object}	domain.ServicesInfo
+//	@Failure		500		{object}	controller.GetRepository.HTTPError
 //	@Router			/api/ping [get]
 func (h *Handler) PingServices(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
