@@ -21,7 +21,7 @@ func main() {
 		panic(err)
 	}
 
-	conn, err := grpc.NewClient(cfg.Port, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(cfg.CollectorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		panic(err)
 	}

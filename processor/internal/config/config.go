@@ -3,13 +3,15 @@ package config
 import "os"
 
 type Config struct {
-	Port string
+	Port          string
+	CollectorAddr string
 }
 
 func Load() Config {
 	var config Config
 
 	config.Port = getenv("PROCESSOR_PORT", "50051")
+	config.CollectorAddr = getenv("COLLECTOR_ADDR", "localhost:50052")
 
 	return config
 }
