@@ -4,20 +4,33 @@ services:
             context: .
             dockerfile: Dockerfile.collector
         environment:
-            COLLECTOR_PORT: "50051"
+            COLLECTOR_PORT: "50052"
         image: collector
         ports:
-            - "50051:50051"
+            - "50052:50052"
 
     gateway:
         build:
             context: .
             dockerfile: Dockerfile.gateway
         environment:
-            COLLECTOR_ADDR: "collector:50051"
+            PROCESSOR_ADDR: "processor:50051"
             GATEWAY_PORT: "8080"
         image: gateway
         ports:
             - "8080:8080"
+        depends_on:
+            - processor
+
+    processor:
+        build:
+            context: .
+            dockerfile: Dockerfile.processor
+        environment:
+            COLLECTOR_ADDR: "collector:50052"
+            PROCESSOR_PORT: "50051"
+        image: processor
+        ports:
+            - "50051:50051"
         depends_on:
             - collector
