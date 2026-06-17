@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/xamelllion/golang-course/gateway/internal/domain"
 	apperror "github.com/xamelllion/golang-course/internal/errors"
@@ -14,19 +15,23 @@ import (
 
 type Collector struct {
 	conn *grpc.ClientConn
+	log  *slog.Logger
 }
 
-func NewCollector(conn *grpc.ClientConn) Collector {
+func NewCollector(conn *grpc.ClientConn, log *slog.Logger) Collector {
 	return Collector{
 		conn: conn,
+		log:  log,
 	}
 }
 
 func (c Collector) GetRepository(owner, repo string) (domain.Repository, error) {
 	client := pbProcessor.NewProcessorServiceClient(c.conn)
 
+	c.log.Debug("adapter: get repositon of %s/%s", owner, repo)
 	repository, error := client.GetRepository(context.Background(), &pbProcessor.GetRepositoryRequest{Owner: owner, Repo: repo})
 	if error != nil {
+		c.log.Debug("adapter: error %v", error)
 		switch status.Code(error) {
 		case codes.NotFound:
 			return domain.Repository{}, apperror.New(apperror.CodeNotFound, error.Error())

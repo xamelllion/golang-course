@@ -9,6 +9,7 @@ import (
 	"github.com/xamelllion/golang-course/gateway/internal/config"
 	controller "github.com/xamelllion/golang-course/gateway/internal/controller/http"
 	"github.com/xamelllion/golang-course/gateway/internal/usecase"
+	"github.com/xamelllion/golang-course/internal/logger"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -29,6 +30,7 @@ import (
 
 func main() {
 	cfg := config.Load()
+	logger := logger.Load("DEBUG")
 
 	conn, error := grpc.NewClient(cfg.ProcessorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if error != nil {
@@ -36,11 +38,11 @@ func main() {
 	}
 	defer conn.Close()
 
-	collector := collector.NewCollector(conn)
+	collector := collector.NewCollector(conn, logger)
 
-	repositoryUseCase := usecase.NewRepositoryUseCase(collector)
+	repositoryUseCase := usecase.NewRepositoryUseCase(collector, logger)
 
-	handler := controller.NewHandler(repositoryUseCase)
+	handler := controller.NewHandler(repositoryUseCase, logger)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/docs/swagger/", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://localhost:%s/docs/swagger/doc.json", cfg.Port))))

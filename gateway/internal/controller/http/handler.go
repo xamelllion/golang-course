@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -17,11 +18,13 @@ type RepositoryUseCase interface {
 
 type Handler struct {
 	RepositoryUseCase RepositoryUseCase
+	log               *slog.Logger
 }
 
-func NewHandler(rp RepositoryUseCase) Handler {
+func NewHandler(rp RepositoryUseCase, log *slog.Logger) Handler {
 	return Handler{
 		RepositoryUseCase: rp,
+		log:               log,
 	}
 }
 
@@ -67,8 +70,11 @@ func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.log.Debug("http: get request of %s/%s", owner, repo)
+
 	repository, error := h.RepositoryUseCase.GetRepository(owner, repo)
 	if error != nil {
+		h.log.Debug("http: error %v", error)
 		switch apperror.CodeOf(error) {
 		case apperror.CodeNotFound:
 			writeJSONError(w, http.StatusNotFound, "not found")
