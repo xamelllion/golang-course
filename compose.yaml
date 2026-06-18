@@ -50,7 +50,8 @@ services:
         ports:
             - "50053:50053"
         depends_on:
-            - postgres
+            postgres:
+                condition: service_healthy
 
     postgres:
         image: postgres:17-alpine
