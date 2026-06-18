@@ -1,42 +1,87 @@
-TestApp. CLI tool that provide you information about github repo
+# TestApp
 
+A service for retrieving GitHub repository information and managing repository subscriptions. The public API uses HTTP, while internal services communicate over gRPC.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Client[HTTP client] -->|HTTP| Gateway
+
+    Gateway -->|gRPC| Processor
+    Gateway -->|gRPC| Subscriber
+    Gateway -.->|gRPC health check| Collector
+    Processor -->|gRPC| Collector
+    Collector -->|gRPC| Subscriber
+
+    Collector -->|HTTPS| GitHub[GitHub API]
+    Subscriber -->|HTTPS| GitHub
+    Subscriber -->|SQL| PostgreSQL[(PostgreSQL)]
+    Migrate[Database migrations] --> PostgreSQL
 ```
-Usage: TestApp owner/repo
-```
 
-## Steps for bulding
+- **Gateway** — exposes the HTTP API and Swagger UI and translates HTTP requests into gRPC calls.
+- **Processor** — currently forwards repository requests to the Collector without additional processing.
+- **Collector** — retrieves repository data from the GitHub API.
+- **Subscriber** — creates, deletes, and lists subscriptions.
+- **PostgreSQL** — stores subscriptions; the schema is managed through migrations.
 
-### 1. Build tool
+## Running the service
+
+Docker and Docker Compose are required.
+
 ```bash
-go build .
+docker compose up --build
 ```
 
-### 2. Run it
+After startup:
+
+- API: `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/docs/swagger/index.html`
+
+Stop the services:
+
 ```bash
-./TestApp Xamelllion/TestApp
-```
-output:
-```
-TestApp:
-        description: Homework for GoLang course 2026
-        start count: 0
-        forks count: 0
-        date creation: 2026-03-03T16:45:04Z
+docker compose down
 ```
 
-## Install it to the system
+Remove the PostgreSQL data volume:
 
-### 0. Add go/bin folder to the PATH
 ```bash
-  echo "export PATH=\$PATH:~/go/bin" >> ~/.bashrc
+docker compose down -v
 ```
 
-### 1. Install package
+## HTTP API
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/repositories/info?url=https://github.com/{owner}/{repo}` | Get repository information |
+| `POST` | `/api/subscriptions` | Create a subscription |
+| `DELETE` | `/api/subscriptions/{owner}/{repo}` | Delete a subscription |
+| `GET` | `/api/subscriptions` | List subscriptions |
+| `GET` | `/api/subscriptions/info` | Get information about all subscribed repositories |
+| `GET` | `/api/ping` | Check service health |
+
+Create a subscription:
+
 ```bash
-go install .
+curl -X POST http://localhost:8080/api/subscriptions \
+  -H 'Content-Type: application/json' \
+  -d '{"owner":"octocat","repo":"Hello-World"}'
 ```
 
-### 2. Run it
+Regenerate sqlc code:
+
 ```bash
-TestApp Xamelllion/TestApp
-````
+cd subscriber/internal/adapter/postgres
+sqlc generate
+```
+
+Regenerate Swagger documentation:
+
+```bash
+swag init \
+  -g main.go \
+  -d gateway/cmd,gateway/internal/controller/http,gateway/internal/domain \
+  -o docs
+```
