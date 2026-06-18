@@ -1,20 +1,20 @@
-package postgres
+package adapter
 
 import (
 	"context"
 
-	"github.com/xamelllion/golang-course/subscriber/internal/adapter/postgres/sqlc"
+	subscriber "github.com/xamelllion/golang-course/subscriber/internal/adapter/postgres/sqlc"
 	"github.com/xamelllion/golang-course/subscriber/internal/domain"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type SubscriptionPostgresAdapter struct {
-	Conn  *pgx.Conn
+	Pool  *pgxpool.Pool
 	Query *subscriber.Queries
 }
 
-func NewSubscriptionPostgresAdapter(conn *pgx.Conn) SubscriptionPostgresAdapter {
-	return SubscriptionPostgresAdapter{Conn: conn, Query: subscriber.New(conn)}
+func NewSubscriptionPostgresAdapter(pool *pgxpool.Pool) SubscriptionPostgresAdapter {
+	return SubscriptionPostgresAdapter{Pool: pool, Query: subscriber.New(pool)}
 }
 
 func (a SubscriptionPostgresAdapter) GetSubscriptions(ctx context.Context) ([]domain.Subscription, error) {

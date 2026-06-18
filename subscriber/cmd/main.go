@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
 	pbSubscriber "github.com/xamelllion/golang-course/proto/subscriber"
 	"github.com/xamelllion/golang-course/subscriber/internal/config"
 	controller "github.com/xamelllion/golang-course/subscriber/internal/controller/grpc"
 	"github.com/xamelllion/golang-course/subscriber/internal/usecase"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 )
 
@@ -19,16 +20,22 @@ func main() {
 
 	ctx := context.Background()
 
-	conn, err := pgx.Connect(ctx, cfg.DB_DSN)
+	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_DSN"))
 	if err != nil {
-		panic(err)
+		log.Fatalf("create pg pool: %v", err)
 	}
-	defer conn.Close(ctx)
+	defer pool.Close()
+
+	if err := pool.Ping(ctx); err != nil {
+		log.Fatalf("ping postgres: %v", err)
+	}
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Port))
 	if err != nil {
 		panic(err)
 	}
+
+	// postgresAdapter := adapter.NewSubscriptionPostgresAdapter(pool)
 
 	usecase := usecase.NewPingUsecase()
 	server := controller.NewServer(usecase)
