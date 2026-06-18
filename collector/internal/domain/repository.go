@@ -2,6 +2,11 @@ package domain
 
 import "time"
 
+type Subscription struct {
+	Owner string
+	Repo string
+}
+
 type GithubRepository struct {
 	Name        string
 	Description string

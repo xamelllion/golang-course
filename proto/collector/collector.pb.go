@@ -230,6 +230,86 @@ func (x *PingResponse) GetReply() string {
 	return ""
 }
 
+type GetSubscribedRepositoryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSubscribedRepositoryRequest) Reset() {
+	*x = GetSubscribedRepositoryRequest{}
+	mi := &file_proto_collector_collector_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSubscribedRepositoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSubscribedRepositoryRequest) ProtoMessage() {}
+
+func (x *GetSubscribedRepositoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_collector_collector_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSubscribedRepositoryRequest.ProtoReflect.Descriptor instead.
+func (*GetSubscribedRepositoryRequest) Descriptor() ([]byte, []int) {
+	return file_proto_collector_collector_proto_rawDescGZIP(), []int{4}
+}
+
+type GetSubscribedRepositoryResponse struct {
+	state         protoimpl.MessageState   `protogen:"open.v1"`
+	Repositories  []*GetRepositoryResponse `protobuf:"bytes,1,rep,name=repositories,proto3" json:"repositories,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSubscribedRepositoryResponse) Reset() {
+	*x = GetSubscribedRepositoryResponse{}
+	mi := &file_proto_collector_collector_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSubscribedRepositoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSubscribedRepositoryResponse) ProtoMessage() {}
+
+func (x *GetSubscribedRepositoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_collector_collector_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSubscribedRepositoryResponse.ProtoReflect.Descriptor instead.
+func (*GetSubscribedRepositoryResponse) Descriptor() ([]byte, []int) {
+	return file_proto_collector_collector_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetSubscribedRepositoryResponse) GetRepositories() []*GetRepositoryResponse {
+	if x != nil {
+		return x.Repositories
+	}
+	return nil
+}
+
 var File_proto_collector_collector_proto protoreflect.FileDescriptor
 
 const file_proto_collector_collector_proto_rawDesc = "" +
@@ -247,9 +327,13 @@ const file_proto_collector_collector_proto_rawDesc = "" +
 	"createDate\"\r\n" +
 	"\vPingRequest\"$\n" +
 	"\fPingResponse\x12\x14\n" +
-	"\x05reply\x18\x01 \x01(\tR\x05reply2\x9f\x01\n" +
+	"\x05reply\x18\x01 \x01(\tR\x05reply\" \n" +
+	"\x1eGetSubscribedRepositoryRequest\"g\n" +
+	"\x1fGetSubscribedRepositoryResponse\x12D\n" +
+	"\frepositories\x18\x01 \x03(\v2 .collector.GetRepositoryResponseR\frepositories2\x91\x02\n" +
 	"\x10CollectorService\x12R\n" +
-	"\rGetRepository\x12\x1f.collector.GetRepositoryRequest\x1a .collector.GetRepositoryResponse\x127\n" +
+	"\rGetRepository\x12\x1f.collector.GetRepositoryRequest\x1a .collector.GetRepositoryResponse\x12p\n" +
+	"\x17GetSubscribedRepository\x12).collector.GetSubscribedRepositoryRequest\x1a*.collector.GetSubscribedRepositoryResponse\x127\n" +
 	"\x04Ping\x12\x16.collector.PingRequest\x1a\x17.collector.PingResponseB.Z,github.com/xamelllion/golang-course/proto/collectorb\x06proto3"
 
 var (
@@ -264,25 +348,30 @@ func file_proto_collector_collector_proto_rawDescGZIP() []byte {
 	return file_proto_collector_collector_proto_rawDescData
 }
 
-var file_proto_collector_collector_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_proto_collector_collector_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_proto_collector_collector_proto_goTypes = []any{
-	(*GetRepositoryRequest)(nil),  // 0: collector.GetRepositoryRequest
-	(*GetRepositoryResponse)(nil), // 1: collector.GetRepositoryResponse
-	(*PingRequest)(nil),           // 2: collector.PingRequest
-	(*PingResponse)(nil),          // 3: collector.PingResponse
-	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
+	(*GetRepositoryRequest)(nil),            // 0: collector.GetRepositoryRequest
+	(*GetRepositoryResponse)(nil),           // 1: collector.GetRepositoryResponse
+	(*PingRequest)(nil),                     // 2: collector.PingRequest
+	(*PingResponse)(nil),                    // 3: collector.PingResponse
+	(*GetSubscribedRepositoryRequest)(nil),  // 4: collector.GetSubscribedRepositoryRequest
+	(*GetSubscribedRepositoryResponse)(nil), // 5: collector.GetSubscribedRepositoryResponse
+	(*timestamppb.Timestamp)(nil),           // 6: google.protobuf.Timestamp
 }
 var file_proto_collector_collector_proto_depIdxs = []int32{
-	4, // 0: collector.GetRepositoryResponse.create_date:type_name -> google.protobuf.Timestamp
-	0, // 1: collector.CollectorService.GetRepository:input_type -> collector.GetRepositoryRequest
-	2, // 2: collector.CollectorService.Ping:input_type -> collector.PingRequest
-	1, // 3: collector.CollectorService.GetRepository:output_type -> collector.GetRepositoryResponse
-	3, // 4: collector.CollectorService.Ping:output_type -> collector.PingResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	6, // 0: collector.GetRepositoryResponse.create_date:type_name -> google.protobuf.Timestamp
+	1, // 1: collector.GetSubscribedRepositoryResponse.repositories:type_name -> collector.GetRepositoryResponse
+	0, // 2: collector.CollectorService.GetRepository:input_type -> collector.GetRepositoryRequest
+	4, // 3: collector.CollectorService.GetSubscribedRepository:input_type -> collector.GetSubscribedRepositoryRequest
+	2, // 4: collector.CollectorService.Ping:input_type -> collector.PingRequest
+	1, // 5: collector.CollectorService.GetRepository:output_type -> collector.GetRepositoryResponse
+	5, // 6: collector.CollectorService.GetSubscribedRepository:output_type -> collector.GetSubscribedRepositoryResponse
+	3, // 7: collector.CollectorService.Ping:output_type -> collector.PingResponse
+	5, // [5:8] is the sub-list for method output_type
+	2, // [2:5] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_collector_collector_proto_init() }
@@ -296,7 +385,7 @@ func file_proto_collector_collector_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_collector_collector_proto_rawDesc), len(file_proto_collector_collector_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

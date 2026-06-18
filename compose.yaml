@@ -5,6 +5,7 @@ services:
             dockerfile: Dockerfile.collector
         environment:
             COLLECTOR_PORT: "50052"
+            SUBSCRIBER_ADDR: "subscriber:50053"
         image: collector
         ports:
             - "50052:50052"
