@@ -31,6 +31,15 @@ func (a SubscriptionPostgresAdapter) GetSubscriptions(ctx context.Context) ([]do
 	return result, nil
 }
 
+func (a SubscriptionPostgresAdapter) IsExistsSubscription(ctx context.Context, subi domain.Subscription) (bool, error) {
+	result, err := a.Query.IsExistsSubscription(ctx, subscriber.IsExistsSubscriptionParams{Owner: subi.Owner, Repo: subi.Repo})
+	if err != nil {
+		return false, err
+	}
+
+	return result, nil
+}
+
 func (a SubscriptionPostgresAdapter) CreateSubscription(ctx context.Context, sub domain.Subscription) error {
 	_, err := a.Query.CreateSubscription(ctx, subscriber.CreateSubscriptionParams{Owner: sub.Owner, Repo: sub.Repo})
 

@@ -78,3 +78,22 @@ func (q *Queries) GetSubscriptions(ctx context.Context) ([]Subscription, error) 
 	}
 	return items, nil
 }
+
+const isExistsSubscription = `-- name: IsExistsSubscription :one
+SELECT EXISTS(
+    SELECT 1 FROM subscriptions
+    WHERE owner = $1 AND repo = $2
+)
+`
+
+type IsExistsSubscriptionParams struct {
+	Owner string
+	Repo  string
+}
+
+func (q *Queries) IsExistsSubscription(ctx context.Context, arg IsExistsSubscriptionParams) (bool, error) {
+	row := q.db.QueryRow(ctx, isExistsSubscription, arg.Owner, arg.Repo)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}

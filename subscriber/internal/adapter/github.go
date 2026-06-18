@@ -17,11 +17,11 @@ func (gra GithubRepositoryAdapter) IsExistsRepository(owner, repo string) (bool,
 	_, err := gra.GithubClient.GetRepository(owner, repo)
 	if err != nil {
 		if apperror.CodeOf(err) == apperror.CodeNotFound {
-			return true, nil
+			return false, nil
 		}
 
 		return false, err
 	}
 
-	return false, nil
+	return true, nil
 }

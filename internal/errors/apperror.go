@@ -12,6 +12,7 @@ const (
 	CodeNotFound        Code = "not_found"
 	CodeUnavailable     Code = "unavailable"
 	CodeInternal        Code = "internal"
+	CodeDublicate       Code = "dublicate"
 )
 
 type Error struct {
