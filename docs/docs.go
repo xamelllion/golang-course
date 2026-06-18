@@ -115,6 +115,192 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/subscriptions": {
+            "get": {
+                "description": "Get all repository subscriptions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Get subscriptions",
+                "operationId": "get-subscriptions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Subscription"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a subscription to an existing GitHub repository",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Subscribe to a repository",
+                "operationId": "subscribe-to-repository",
+                "parameters": [
+                    {
+                        "description": "Repository subscription",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.SubscribeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/subscriptions/info": {
+            "get": {
+                "description": "Get GitHub information for every subscribed repository",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Get subscribed repository information",
+                "operationId": "get-subscribed-repository-info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Repository"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/subscriptions/{owner}/{repo}": {
+            "delete": {
+                "description": "Delete an existing repository subscription",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Unsubscribe from a repository",
+                "operationId": "unsubscribe-from-repository",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "octocat",
+                        "description": "GitHub repository owner",
+                        "name": "owner",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "Hello-World",
+                        "description": "GitHub repository name",
+                        "name": "repo",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetRepository.HTTPError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -124,6 +310,19 @@ const docTemplate = `{
                 "error": {
                     "type": "string",
                     "example": "some error"
+                }
+            }
+        },
+        "controller.SubscribeRequest": {
+            "type": "object",
+            "properties": {
+                "owner": {
+                    "type": "string",
+                    "example": "octocat"
+                },
+                "repo": {
+                    "type": "string",
+                    "example": "Hello-World"
                 }
             }
         },
@@ -198,6 +397,19 @@ const docTemplate = `{
                 "ServicesStatusOk",
                 "ServicesStatusDegraded"
             ]
+        },
+        "domain.Subscription": {
+            "type": "object",
+            "properties": {
+                "owner": {
+                    "type": "string",
+                    "example": "octocat"
+                },
+                "repo": {
+                    "type": "string",
+                    "example": "Hello-World"
+                }
+            }
         }
     }
 }`

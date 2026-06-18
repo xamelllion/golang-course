@@ -2,6 +2,11 @@ package domain
 
 import "time"
 
+type Subscription struct {
+	Owner string `json:"owner" example:"octocat"`
+	Repo  string `json:"repo" example:"Hello-World"`
+}
+
 type Repository struct {
 	Name        string    `json:"name" example:"xamelllion"`
 	Description string    `json:"description" example:"xamelllion's repo"`
