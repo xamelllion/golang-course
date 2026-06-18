@@ -6,10 +6,38 @@ option go_package = "github.com/xamelllion/golang-course/proto/subscriber";
 
 service SubscriberService {
   rpc Ping(PingRequest) returns (PingResponse);
+  rpc Subscribe(SubscribeRequest) returns (SubscribeResponse);
+  rpc Unsubscribe(UnsubscribeRequest) returns (UnsubscribeResponse);
+  rpc GetSubscriptions(GetSubscriptionsRequest) returns (GetSubscriptionsResponse);
 }
 
 message PingRequest {}
 
 message PingResponse {
   string reply = 1;
+}
+
+message SubscribeRequest {
+  string owner = 1;
+  string repo = 2;
+}
+
+message SubscribeResponse {}
+
+message UnsubscribeRequest {
+  string owner = 1;
+  string repo = 2;
+}
+
+message UnsubscribeResponse {}
+
+message GetSubscriptionsRequest {}
+
+message Subscription {
+  string owner = 1;
+  string repo = 2;
+}
+
+message GetSubscriptionsResponse {
+  repeated Subscription subscriptions = 1;
 }

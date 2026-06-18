@@ -19,7 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SubscriberService_Ping_FullMethodName = "/subscriber.SubscriberService/Ping"
+	SubscriberService_Ping_FullMethodName             = "/subscriber.SubscriberService/Ping"
+	SubscriberService_Subscribe_FullMethodName        = "/subscriber.SubscriberService/Subscribe"
+	SubscriberService_Unsubscribe_FullMethodName      = "/subscriber.SubscriberService/Unsubscribe"
+	SubscriberService_GetSubscriptions_FullMethodName = "/subscriber.SubscriberService/GetSubscriptions"
 )
 
 // SubscriberServiceClient is the client API for SubscriberService service.
@@ -27,6 +30,9 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SubscriberServiceClient interface {
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (*SubscribeResponse, error)
+	Unsubscribe(ctx context.Context, in *UnsubscribeRequest, opts ...grpc.CallOption) (*UnsubscribeResponse, error)
+	GetSubscriptions(ctx context.Context, in *GetSubscriptionsRequest, opts ...grpc.CallOption) (*GetSubscriptionsResponse, error)
 }
 
 type subscriberServiceClient struct {
@@ -47,11 +53,44 @@ func (c *subscriberServiceClient) Ping(ctx context.Context, in *PingRequest, opt
 	return out, nil
 }
 
+func (c *subscriberServiceClient) Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (*SubscribeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SubscribeResponse)
+	err := c.cc.Invoke(ctx, SubscriberService_Subscribe_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriberServiceClient) Unsubscribe(ctx context.Context, in *UnsubscribeRequest, opts ...grpc.CallOption) (*UnsubscribeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UnsubscribeResponse)
+	err := c.cc.Invoke(ctx, SubscriberService_Unsubscribe_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriberServiceClient) GetSubscriptions(ctx context.Context, in *GetSubscriptionsRequest, opts ...grpc.CallOption) (*GetSubscriptionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSubscriptionsResponse)
+	err := c.cc.Invoke(ctx, SubscriberService_GetSubscriptions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SubscriberServiceServer is the server API for SubscriberService service.
 // All implementations must embed UnimplementedSubscriberServiceServer
 // for forward compatibility.
 type SubscriberServiceServer interface {
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
+	Subscribe(context.Context, *SubscribeRequest) (*SubscribeResponse, error)
+	Unsubscribe(context.Context, *UnsubscribeRequest) (*UnsubscribeResponse, error)
+	GetSubscriptions(context.Context, *GetSubscriptionsRequest) (*GetSubscriptionsResponse, error)
 	mustEmbedUnimplementedSubscriberServiceServer()
 }
 
@@ -64,6 +103,15 @@ type UnimplementedSubscriberServiceServer struct{}
 
 func (UnimplementedSubscriberServiceServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Ping not implemented")
+}
+func (UnimplementedSubscriberServiceServer) Subscribe(context.Context, *SubscribeRequest) (*SubscribeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Subscribe not implemented")
+}
+func (UnimplementedSubscriberServiceServer) Unsubscribe(context.Context, *UnsubscribeRequest) (*UnsubscribeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Unsubscribe not implemented")
+}
+func (UnimplementedSubscriberServiceServer) GetSubscriptions(context.Context, *GetSubscriptionsRequest) (*GetSubscriptionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSubscriptions not implemented")
 }
 func (UnimplementedSubscriberServiceServer) mustEmbedUnimplementedSubscriberServiceServer() {}
 func (UnimplementedSubscriberServiceServer) testEmbeddedByValue()                           {}
@@ -104,6 +152,60 @@ func _SubscriberService_Ping_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SubscriberService_Subscribe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubscribeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriberServiceServer).Subscribe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SubscriberService_Subscribe_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriberServiceServer).Subscribe(ctx, req.(*SubscribeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SubscriberService_Unsubscribe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnsubscribeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriberServiceServer).Unsubscribe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SubscriberService_Unsubscribe_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriberServiceServer).Unsubscribe(ctx, req.(*UnsubscribeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SubscriberService_GetSubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSubscriptionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriberServiceServer).GetSubscriptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SubscriberService_GetSubscriptions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriberServiceServer).GetSubscriptions(ctx, req.(*GetSubscriptionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SubscriberService_ServiceDesc is the grpc.ServiceDesc for SubscriberService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +216,18 @@ var SubscriberService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Ping",
 			Handler:    _SubscriberService_Ping_Handler,
+		},
+		{
+			MethodName: "Subscribe",
+			Handler:    _SubscriberService_Subscribe_Handler,
+		},
+		{
+			MethodName: "Unsubscribe",
+			Handler:    _SubscriberService_Unsubscribe_Handler,
+		},
+		{
+			MethodName: "GetSubscriptions",
+			Handler:    _SubscriberService_GetSubscriptions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

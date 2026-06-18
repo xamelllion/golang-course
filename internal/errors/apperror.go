@@ -3,6 +3,8 @@ package apperror
 import (
 	"errors"
 	"fmt"
+
+	"google.golang.org/grpc/codes"
 )
 
 type Code string
@@ -27,6 +29,23 @@ func (err *Error) Error() string {
 	}
 
 	return fmt.Sprintf("%s: %v", err.Msg, err.Err)
+}
+
+func ToGRPCCode(err error) codes.Code {
+	switch CodeOf(err) {
+	case CodeInternal:
+		return codes.Internal
+	case CodeInvalidArgument:
+		return codes.InvalidArgument
+	case CodeDublicate:
+		return codes.AlreadyExists
+	case CodeNotFound:
+		return codes.NotFound
+	case CodeUnavailable:
+		return codes.Unavailable
+	}
+
+	panic("implement me")
 }
 
 func New(code Code, msg string) error {
