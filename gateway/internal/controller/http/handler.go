@@ -200,7 +200,7 @@ type SubscribeRequest struct {
 //	@Failure		409	{object}	controller.GetRepository.HTTPError
 //	@Failure		500	{object}	controller.GetRepository.HTTPError
 //	@Failure		502	{object}	controller.GetRepository.HTTPError
-//	@Router			/subscriptions [post]
+//	@Router			/api/subscriptions [post]
 func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		writeJSONError(w, http.StatusBadRequest, "invalid request body")
@@ -212,6 +212,11 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&subReq); err != nil {
 		writeJSONError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if subReq.Owner == "" || subReq.Repo == "" {
+		writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
 		return
 	}
 
@@ -251,7 +256,7 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 //	@Failure		404	{object}	controller.GetRepository.HTTPError
 //	@Failure		500	{object}	controller.GetRepository.HTTPError
 //	@Failure		502	{object}	controller.GetRepository.HTTPError
-//	@Router			/subscriptions/{owner}/{repo} [delete]
+//	@Router			/api/subscriptions/{owner}/{repo} [delete]
 func (h *Handler) Unsubscribe(w http.ResponseWriter, r *http.Request) {
 	owner := r.PathValue("owner")
 	repo := r.PathValue("repo")
@@ -292,7 +297,7 @@ func (h *Handler) Unsubscribe(w http.ResponseWriter, r *http.Request) {
 //	@Produce		json
 //	@Success		200	{array}		domain.Subscription
 //	@Failure		500	{object}	controller.GetRepository.HTTPError
-//	@Router			/subscriptions [get]
+//	@Router			/api/subscriptions [get]
 func (h *Handler) GetSubscriptions(w http.ResponseWriter, r *http.Request) {
 	subs, err := h.SubscribeUseCase.GetSubscriptions()
 	if err != nil {
@@ -316,7 +321,7 @@ func (h *Handler) GetSubscriptions(w http.ResponseWriter, r *http.Request) {
 //	@Success		200	{array}		domain.Repository
 //	@Failure		500	{object}	controller.GetRepository.HTTPError
 //	@Failure		502	{object}	controller.GetRepository.HTTPError
-//	@Router			/subscriptions/info [get]
+//	@Router			/api/subscriptions/info [get]
 func (h *Handler) GetSubscribedRepositories(w http.ResponseWriter, r *http.Request) {
 	repos, err := h.RepositoryUseCase.GetSubscribedRepository()
 	if err != nil {
@@ -327,6 +332,8 @@ func (h *Handler) GetSubscribedRepositories(w http.ResponseWriter, r *http.Reque
 			fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
 			writeJSONError(w, http.StatusInternalServerError, "internal error")
 		}
+
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

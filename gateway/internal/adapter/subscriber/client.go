@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/xamelllion/golang-course/gateway/internal/config"
+	"github.com/xamelllion/golang-course/gateway/internal/domain"
 	apperror "github.com/xamelllion/golang-course/internal/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -31,6 +32,41 @@ func NewSubscriber(cfg config.Config, log *slog.Logger) Subscriber {
 		client: client,
 		log:    log,
 	}
+}
+
+func (s Subscriber) Subscribe(owner, repo string) error {
+	_, err := s.client.Subscribe(context.Background(), &pbSubscriber.SubscribeRequest{Owner: owner, Repo: repo})
+	if err != nil {
+		return apperror.FromGRPC(err, "subscriber subscribe")
+	}
+
+	return nil
+}
+
+func (s Subscriber) Unsubscribe(owner, repo string) error {
+	_, err := s.client.Unsubscribe(context.Background(), &pbSubscriber.UnsubscribeRequest{Owner: owner, Repo: repo})
+	if err != nil {
+		return apperror.FromGRPC(err, "subscriber unsubscribe")
+	}
+
+	return nil
+}
+
+func (s Subscriber) GetSubscriptions() ([]domain.Subscription, error) {
+	subs, err := s.client.GetSubscriptions(context.Background(), &pbSubscriber.GetSubscriptionsRequest{})
+	if err != nil {
+		return nil, apperror.FromGRPC(err, "subscriber get subscriptions")
+	}
+
+	result := make([]domain.Subscription, len(subs.Subscriptions))
+	for k, sub := range subs.Subscriptions {
+		result[k] = domain.Subscription{
+			Owner: sub.Owner,
+			Repo:  sub.Repo,
+		}
+	}
+
+	return result, nil
 }
 
 func (s Subscriber) Ping() (string, error) {

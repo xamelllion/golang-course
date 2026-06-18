@@ -6,20 +6,26 @@ import (
 	"github.com/xamelllion/golang-course/gateway/internal/domain"
 )
 
-type Collector interface {
+type Processor interface {
 	GetRepository(owner, repo string) (domain.Repository, error)
+	GetSubscribedRepository() ([]domain.Repository, error)
 }
 
 type RepositoryUseCase struct {
-	Collector Collector
+	Processor Processor
 	log       *slog.Logger
 }
 
-func NewRepositoryUseCase(collector Collector, log *slog.Logger) *RepositoryUseCase {
-	return &RepositoryUseCase{Collector: collector, log: log}
+func NewRepositoryUseCase(processor Processor, log *slog.Logger) *RepositoryUseCase {
+	return &RepositoryUseCase{Processor: processor, log: log}
 }
 
 func (r *RepositoryUseCase) GetRepository(owner, repo string) (domain.Repository, error) {
 	r.log.Debug("usecase: get repository", "owner", owner, "repo", repo)
-	return r.Collector.GetRepository(owner, repo)
+	return r.Processor.GetRepository(owner, repo)
+}
+
+func (r *RepositoryUseCase) GetSubscribedRepository() ([]domain.Repository, error) {
+	r.log.Debug("usecase: get subscribed repositories")
+	return r.Processor.GetSubscribedRepository()
 }

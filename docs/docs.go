@@ -116,7 +116,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/subscriptions": {
+        "/api/subscriptions": {
             "get": {
                 "description": "Get all repository subscriptions",
                 "produces": [
@@ -206,7 +206,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/subscriptions/info": {
+        "/api/subscriptions/info": {
             "get": {
                 "description": "Get GitHub information for every subscribed repository",
                 "produces": [
@@ -242,7 +242,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/subscriptions/{owner}/{repo}": {
+        "/api/subscriptions/{owner}/{repo}": {
             "delete": {
                 "description": "Delete an existing repository subscription",
                 "produces": [

@@ -148,7 +148,7 @@ paths:
       summary: Get repository by GitHub URL
       tags:
       - repo
-  /subscriptions:
+  /api/subscriptions:
     get:
       description: Get all repository subscriptions
       operationId: get-subscriptions
@@ -208,7 +208,7 @@ paths:
       summary: Subscribe to a repository
       tags:
       - subscriptions
-  /subscriptions/{owner}/{repo}:
+  /api/subscriptions/{owner}/{repo}:
     delete:
       description: Delete an existing repository subscription
       operationId: unsubscribe-from-repository
@@ -249,7 +249,7 @@ paths:
       summary: Unsubscribe from a repository
       tags:
       - subscriptions
-  /subscriptions/info:
+  /api/subscriptions/info:
     get:
       description: Get GitHub information for every subscribed repository
       operationId: get-subscribed-repository-info

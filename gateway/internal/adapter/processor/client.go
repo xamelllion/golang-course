@@ -37,7 +37,7 @@ func NewProcessor(cfg config.Config, log *slog.Logger) Processor {
 }
 
 func (p Processor) GetRepository(owner, repo string) (domain.Repository, error) {
-	p.log.Debug("adapter: get repositon", "owner", owner, "repo", repo)
+	p.log.Debug("adapter: get repository", "owner", owner, "repo", repo)
 	repository, error := p.client.GetRepository(context.Background(), &pbProcessor.GetRepositoryRequest{Owner: owner, Repo: repo})
 	if error != nil {
 		switch status.Code(error) {
@@ -59,6 +59,27 @@ func (p Processor) GetRepository(owner, repo string) (domain.Repository, error) 
 		Forks:       repository.Forks,
 		CreateDate:  repository.CreateDate.AsTime(),
 	}, nil
+}
+
+func (p Processor) GetSubscribedRepository() ([]domain.Repository, error) {
+	p.log.Debug("adapter: get subscribed repository")
+	repos, error := p.client.GetSubscribedRepository(context.Background(), &pbProcessor.GetSubscribedRepositoryRequest{})
+	if error != nil {
+		return nil, apperror.FromGRPC(error, "processor get subscribed repository")
+	}
+
+	result := make([]domain.Repository, len(repos.Repositories))
+	for k, repo := range repos.Repositories {
+		result[k] = domain.Repository{
+			Name:        repo.Name,
+			Description: repo.Description,
+			Stars:       repo.Stars,
+			Forks:       repo.Forks,
+			CreateDate:  repo.CreateDate.AsTime(),
+		}
+	}
+
+	return result, nil
 }
 
 func (p Processor) Ping() (string, error) {

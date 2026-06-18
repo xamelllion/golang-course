@@ -42,13 +42,18 @@ func main() {
 		"processor":  processor,
 		"subscriber": subscriber,
 	}, logger)
+	subscribeUseCase := usecase.NewSubscribeUseCase(subscriber, logger)
 
-	handler := controller.NewHandler(repositoryUseCase, pingUseCase, logger)
+	handler := controller.NewHandler(repositoryUseCase, pingUseCase, subscribeUseCase, logger)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/docs/swagger/", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://localhost:%s/docs/swagger/doc.json", cfg.Port))))
 	mux.HandleFunc("/api/repositories/info", handler.GetRepository)
 	mux.HandleFunc("/api/ping", handler.PingServices)
+	mux.HandleFunc("POST /api/subscriptions", handler.Subscribe)
+	mux.HandleFunc("DELETE /api/subscriptions/{owner}/{repo}", handler.Unsubscribe)
+	mux.HandleFunc("GET /api/subscriptions", handler.GetSubscriptions)
+	mux.HandleFunc("GET /api/subscriptions/info", handler.GetSubscribedRepositories)
 
 	log.Printf("run server on %s port\n", cfg.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), mux))
