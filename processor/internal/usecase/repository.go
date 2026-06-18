@@ -4,6 +4,7 @@ import "github.com/xamelllion/golang-course/processor/internal/domain"
 
 type Collector interface {
 	GetRepository(owner, repo string) (domain.Repository, error)
+	GetSubscribedRepository() ([]domain.Repository, error)
 }
 
 type RepositoryUseCase struct {
@@ -16,4 +17,8 @@ func NewRepositoryUsecase(collector Collector) *RepositoryUseCase {
 
 func (r *RepositoryUseCase) GetRepository(owner, repo string) (domain.Repository, error) {
 	return r.Collector.GetRepository(owner, repo)
+}
+
+func (r *RepositoryUseCase) GetSubscribedRepository() ([]domain.Repository, error) {
+	return r.Collector.GetSubscribedRepository()
 }

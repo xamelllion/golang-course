@@ -13,6 +13,7 @@ import (
 
 type RepositoryUsecase interface {
 	GetRepository(owner, repo string) (domain.Repository, error)
+	GetSubscribedRepository() ([]domain.Repository, error)
 }
 
 type PingUsecase interface {
@@ -36,16 +37,7 @@ func (s *Server) GetRepository(_ context.Context, req *pbProcessor.GetRepository
 
 	repo, error := s.RepositoryUsecase.GetRepository(req.Owner, req.Repo)
 	if error != nil {
-		switch apperror.CodeOf(error) {
-		case apperror.CodeNotFound:
-			return nil, status.Error(codes.NotFound, error.Error())
-		case apperror.CodeInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, error.Error())
-		case apperror.CodeUnavailable:
-			return nil, status.Error(codes.Unavailable, error.Error())
-		default:
-			return nil, status.Error(codes.Internal, error.Error())
-		}
+		return nil, status.Error(apperror.ToGRPCCode(error), error.Error())
 	}
 
 	return &pbProcessor.GetRepositoryResponse{
@@ -54,6 +46,28 @@ func (s *Server) GetRepository(_ context.Context, req *pbProcessor.GetRepository
 		Stars:       repo.Stars,
 		Forks:       repo.Forks,
 		CreateDate:  timestamppb.New(repo.CreateDate),
+	}, nil
+}
+
+func (s *Server) GetSubscribedRepository(_ context.Context, _ *pbProcessor.GetSubscribedRepositoryRequest) (*pbProcessor.GetSubscribedRepositoryResponse, error) {
+	repos, error := s.RepositoryUsecase.GetSubscribedRepository()
+	if error != nil {
+		return nil, status.Error(apperror.ToGRPCCode(error), error.Error())
+	}
+
+	result := make([]*pbProcessor.GetRepositoryResponse, len(repos))
+	for k, repo := range repos {
+		result[k] = &pbProcessor.GetRepositoryResponse{
+			Name:        repo.Name,
+			Description: repo.Description,
+			Stars:       repo.Stars,
+			Forks:       repo.Forks,
+			CreateDate:  timestamppb.New(repo.CreateDate),
+		}
+	}
+
+	return &pbProcessor.GetSubscribedRepositoryResponse{
+		Repositories: result,
 	}, nil
 }
 

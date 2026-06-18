@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ProcessorService_GetRepository_FullMethodName = "/processor.ProcessorService/GetRepository"
-	ProcessorService_Ping_FullMethodName          = "/processor.ProcessorService/Ping"
+	ProcessorService_GetRepository_FullMethodName           = "/processor.ProcessorService/GetRepository"
+	ProcessorService_GetSubscribedRepository_FullMethodName = "/processor.ProcessorService/GetSubscribedRepository"
+	ProcessorService_Ping_FullMethodName                    = "/processor.ProcessorService/Ping"
 )
 
 // ProcessorServiceClient is the client API for ProcessorService service.
@@ -28,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProcessorServiceClient interface {
 	GetRepository(ctx context.Context, in *GetRepositoryRequest, opts ...grpc.CallOption) (*GetRepositoryResponse, error)
+	GetSubscribedRepository(ctx context.Context, in *GetSubscribedRepositoryRequest, opts ...grpc.CallOption) (*GetSubscribedRepositoryResponse, error)
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 }
 
@@ -49,6 +51,16 @@ func (c *processorServiceClient) GetRepository(ctx context.Context, in *GetRepos
 	return out, nil
 }
 
+func (c *processorServiceClient) GetSubscribedRepository(ctx context.Context, in *GetSubscribedRepositoryRequest, opts ...grpc.CallOption) (*GetSubscribedRepositoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSubscribedRepositoryResponse)
+	err := c.cc.Invoke(ctx, ProcessorService_GetSubscribedRepository_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *processorServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PingResponse)
@@ -64,6 +76,7 @@ func (c *processorServiceClient) Ping(ctx context.Context, in *PingRequest, opts
 // for forward compatibility.
 type ProcessorServiceServer interface {
 	GetRepository(context.Context, *GetRepositoryRequest) (*GetRepositoryResponse, error)
+	GetSubscribedRepository(context.Context, *GetSubscribedRepositoryRequest) (*GetSubscribedRepositoryResponse, error)
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	mustEmbedUnimplementedProcessorServiceServer()
 }
@@ -77,6 +90,9 @@ type UnimplementedProcessorServiceServer struct{}
 
 func (UnimplementedProcessorServiceServer) GetRepository(context.Context, *GetRepositoryRequest) (*GetRepositoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRepository not implemented")
+}
+func (UnimplementedProcessorServiceServer) GetSubscribedRepository(context.Context, *GetSubscribedRepositoryRequest) (*GetSubscribedRepositoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSubscribedRepository not implemented")
 }
 func (UnimplementedProcessorServiceServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Ping not implemented")
@@ -120,6 +136,24 @@ func _ProcessorService_GetRepository_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProcessorService_GetSubscribedRepository_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSubscribedRepositoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProcessorServiceServer).GetSubscribedRepository(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ProcessorService_GetSubscribedRepository_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProcessorServiceServer).GetSubscribedRepository(ctx, req.(*GetSubscribedRepositoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ProcessorService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PingRequest)
 	if err := dec(in); err != nil {
@@ -148,6 +182,10 @@ var ProcessorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRepository",
 			Handler:    _ProcessorService_GetRepository_Handler,
+		},
+		{
+			MethodName: "GetSubscribedRepository",
+			Handler:    _ProcessorService_GetSubscribedRepository_Handler,
 		},
 		{
 			MethodName: "Ping",

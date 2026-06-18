@@ -3,8 +3,10 @@ package apperror
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Code string
@@ -46,6 +48,24 @@ func ToGRPCCode(err error) codes.Code {
 	}
 
 	panic("implement me")
+}
+
+func FromGRPC(err error, msg string) error {
+	switch status.Code(err) {
+	case codes.NotFound:
+		return WrapCode(CodeNotFound, msg, err)
+	case codes.InvalidArgument:
+		return WrapCode(CodeInvalidArgument, msg, err)
+	case codes.Unavailable:
+		return WrapCode(CodeUnavailable, msg, err)
+	case codes.AlreadyExists:
+		return WrapCode(CodeDublicate, msg, err)
+	case codes.Internal:
+		return WrapCode(CodeInternal, msg, err)
+	default:
+		log.Default().Print("unknown error code", "error", err.Error())
+		return status.Error(codes.Unknown, err.Error())
+	}
 }
 
 func New(code Code, msg string) error {

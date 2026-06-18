@@ -3,40 +3,29 @@ package collector
 import (
 	"context"
 
-	"github.com/xamelllion/golang-course/processor/internal/domain"
 	apperror "github.com/xamelllion/golang-course/internal/errors"
+	"github.com/xamelllion/golang-course/processor/internal/domain"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pb "github.com/xamelllion/golang-course/proto/collector"
 )
 
 type Collector struct {
-	conn *grpc.ClientConn
+	conn   *grpc.ClientConn
+	client pb.CollectorServiceClient
 }
 
 func NewCollector(conn *grpc.ClientConn) Collector {
 	return Collector{
-		conn: conn,
+		conn:   conn,
+		client: pb.NewCollectorServiceClient(conn),
 	}
 }
 
 func (c Collector) GetRepository(owner, repo string) (domain.Repository, error) {
-	client := pb.NewCollectorServiceClient(c.conn)
-
-	repository, error := client.GetRepository(context.Background(), &pb.GetRepositoryRequest{Owner: owner, Repo: repo})
-	if error != nil {
-		switch status.Code(error) {
-		case codes.NotFound:
-			return domain.Repository{}, apperror.New(apperror.CodeNotFound, error.Error())
-		case codes.InvalidArgument:
-			return domain.Repository{}, apperror.New(apperror.CodeInvalidArgument, error.Error())
-		case codes.Unavailable:
-			return domain.Repository{}, apperror.New(apperror.CodeUnavailable, error.Error())
-		default:
-			return domain.Repository{}, apperror.New(apperror.CodeInternal, error.Error())
-		}
+	repository, err := c.client.GetRepository(context.Background(), &pb.GetRepositoryRequest{Owner: owner, Repo: repo})
+	if err != nil {
+		return domain.Repository{}, apperror.FromGRPC(err, "collector get repository")
 	}
 
 	return domain.Repository{
@@ -46,4 +35,24 @@ func (c Collector) GetRepository(owner, repo string) (domain.Repository, error) 
 		Forks:       repository.Forks,
 		CreateDate:  repository.CreateDate.AsTime(),
 	}, nil
+}
+
+func (c Collector) GetSubscribedRepository() ([]domain.Repository, error) {
+	repos, err := c.client.GetSubscribedRepository(context.Background(), &pb.GetSubscribedRepositoryRequest{})
+	if err != nil {
+		return nil, apperror.FromGRPC(err, "collector get subscribed repository")
+	}
+
+	result := make([]domain.Repository, len(repos.Repositories))
+	for k, repo := range repos.Repositories {
+		result[k] = domain.Repository{
+			Name:        repo.Name,
+			Description: repo.Description,
+			Stars:       repo.Stars,
+			Forks:       repo.Forks,
+			CreateDate:  repo.CreateDate.AsTime(),
+		}
+	}
+
+	return result, nil
 }
