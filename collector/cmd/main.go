@@ -10,6 +10,7 @@ import (
 
 	"github.com/xamelllion/golang-course/collector/internal/adapter"
 	"github.com/xamelllion/golang-course/collector/internal/config"
+	"github.com/xamelllion/golang-course/collector/internal/controller"
 	kafkaController "github.com/xamelllion/golang-course/collector/internal/controller/kafka"
 	"github.com/xamelllion/golang-course/collector/internal/domain"
 	"github.com/xamelllion/golang-course/collector/internal/usecase"
@@ -114,15 +115,26 @@ func main() {
 
 	subscriptionAdapter := adapter.NewSubscriber(conn)
 
-	kafkaProducer := kafkaClient.NewKafkaProducer([]string{cfg.KafkaBroker}, "repo.tasks.response")
-	kafkaConsumer := kafkaClient.NewKafkaReader([]string{cfg.KafkaBroker}, "repo.tasks.request", "collector")
-	kafkaAdapter := adapter.NewKafkaAdapter(kafkaProducer, kafkaConsumer)
+	kafkaProducerRequest := kafkaClient.NewKafkaProducer([]string{cfg.KafkaBroker}, "repo.tasks.request")
+	kafkaConsumerRequest := kafkaClient.NewKafkaReader([]string{cfg.KafkaBroker}, "repo.tasks.request", "collector")
+	kafkaAdapterRequest := adapter.NewKafkaAdapter(kafkaProducerRequest, kafkaConsumerRequest)
 
-	taskerUsecase := usecase.NewTaskerUsecase(ghAdapter, kafkaAdapter)
+	kafkaProducerResponse := kafkaClient.NewKafkaProducer([]string{cfg.KafkaBroker}, "repo.tasks.response")
+	kafkaConsumerResponse := kafkaClient.NewKafkaReader([]string{cfg.KafkaBroker}, "repo.tasks.response", "collector")
+	kafkaAdapterResponse := adapter.NewKafkaAdapter(kafkaProducerResponse, kafkaConsumerResponse)
+
+	taskerUsecase := usecase.NewTaskerUsecase(ghAdapter, kafkaAdapterResponse)
+	refresherUsecase := usecase.NewRefresherUsecase(subscriptionAdapter, kafkaAdapterRequest)
 
 	go func() {
-		if err := kafkaController.NewKafkaController(taskerUsecase, kafkaConsumer).Run(); err != nil {
+		if err := kafkaController.NewKafkaController(taskerUsecase, kafkaConsumerRequest).Run(); err != nil {
 			log.Printf("kafka err %v", err)
+		}
+	}()
+
+	go func() {
+		if err := controller.NewScheduler(refresherUsecase, time.Second*15).Run(); err != nil {
+			log.Printf("refresher err %v", err)
 		}
 	}()
 
