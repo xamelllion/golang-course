@@ -14,4 +14,6 @@ type RepoTaskResponse struct {
 	Stars       int       `json:"stars"`
 	Forks       int       `json:"forks"`
 	CreatedAt   time.Time `json:"created_at"`
+	Status      string    `json:"status"`
+	Error       string    `json:"error"`
 }

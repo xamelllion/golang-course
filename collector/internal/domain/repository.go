@@ -7,6 +7,11 @@ type Subscription struct {
 	Repo string
 }
 
+type Task struct {
+	Owner string
+	Repo string
+}
+
 type GithubRepository struct {
 	Name        string
 	Description string

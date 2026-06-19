@@ -30,10 +30,10 @@ func (p KafkaConsumer) Run(ctx context.Context, handle func(context.Context, []b
 
 		if err := handle(ctx, msg.Value); err != nil {
 			log.Printf("error in handle %v", err)
-			continue
 		}
 
 		if err := p.r.CommitMessages(ctx, msg); err != nil {
+			log.Printf("error in commit message %v", err)
 			return err
 		}
 	}

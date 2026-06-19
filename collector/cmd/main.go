@@ -10,9 +10,12 @@ import (
 
 	"github.com/xamelllion/golang-course/collector/internal/adapter"
 	"github.com/xamelllion/golang-course/collector/internal/config"
+	kafkaController "github.com/xamelllion/golang-course/collector/internal/controller/kafka"
 	"github.com/xamelllion/golang-course/collector/internal/domain"
+	"github.com/xamelllion/golang-course/collector/internal/usecase"
 	apperror "github.com/xamelllion/golang-course/internal/errors"
 	"github.com/xamelllion/golang-course/internal/github"
+	kafkaClient "github.com/xamelllion/golang-course/internal/kafka"
 	pb "github.com/xamelllion/golang-course/proto/collector"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -105,14 +108,27 @@ func main() {
 	}
 	defer conn.Close()
 
-	subscriptionAdapter := adapter.NewSubscriber(conn)
-
 	client := http.Client{Timeout: 10 * time.Second}
 	ghClient := github.NewClient(client)
+	ghAdapter := adapter.NewGithubRepositoryAdapter(ghClient)
+
+	subscriptionAdapter := adapter.NewSubscriber(conn)
+
+	kafkaProducer := kafkaClient.NewKafkaProducer([]string{cfg.KafkaBroker}, "repo.tasks.response")
+	kafkaConsumer := kafkaClient.NewKafkaReader([]string{cfg.KafkaBroker}, "repo.tasks.request", "collector")
+	kafkaAdapter := adapter.NewKafkaAdapter(kafkaProducer, kafkaConsumer)
+
+	taskerUsecase := usecase.NewTaskerUsecase(ghAdapter, kafkaAdapter)
+
+	go func() {
+		if err := kafkaController.NewKafkaController(taskerUsecase, kafkaConsumer).Run(); err != nil {
+			log.Printf("kafka err %v", err)
+		}
+	}()
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterCollectorServiceServer(grpcServer, &server{
-		gh:  adapter.NewGithubRepositoryAdapter(ghClient),
+		gh:  ghAdapter,
 		rp:  subscriptionAdapter,
 		cfg: cfg,
 	})
