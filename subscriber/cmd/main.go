@@ -38,7 +38,7 @@ func main() {
 		panic(err)
 	}
 
-	githubClient := github.NewClient(http.Client{Timeout: time.Second * 3})
+	githubClient := github.NewClient(http.Client{Timeout: time.Second * 3}, cfg.GithubToken)
 
 	postgresAdapter := adapter.NewSubscriptionPostgresAdapter(pool)
 	githubAdapter := adapter.NewGithubRepositoryAdapter(githubClient)

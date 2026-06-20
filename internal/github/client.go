@@ -12,10 +12,11 @@ import (
 
 type Client struct {
 	Client http.Client
+	Token  string
 }
 
-func NewClient(http http.Client) Client {
-	return Client{Client: http}
+func NewClient(http http.Client, token string) Client {
+	return Client{Client: http, Token: token}
 }
 
 func (c Client) makeGithubRequest(method, endpoint string) (*http.Response, error) {
@@ -25,6 +26,13 @@ func (c Client) makeGithubRequest(method, endpoint string) (*http.Response, erro
 	if err != nil {
 		return nil, apperror.WrapCode(apperror.CodeInternal, "making request", err)
 	}
+
+	if c.Token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.Token)
+	}
+
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 
 	res, err := c.Client.Do(req)
 	if err != nil {

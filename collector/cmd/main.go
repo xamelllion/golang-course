@@ -110,7 +110,7 @@ func main() {
 	defer conn.Close()
 
 	client := http.Client{Timeout: 10 * time.Second}
-	ghClient := github.NewClient(client)
+	ghClient := github.NewClient(client, cfg.GithubToken)
 	ghAdapter := adapter.NewGithubRepositoryAdapter(ghClient)
 
 	subscriptionAdapter := adapter.NewSubscriber(conn)

@@ -4,6 +4,7 @@ services:
             context: .
             dockerfile: Dockerfile.collector
         environment:
+            GITHUB_TOKEN: ${GITHUB_TOKEN}
             COLLECTOR_PORT: "50052"
             SUBSCRIBER_ADDR: "subscriber:50053"
             KAFKA_BROKER: "kafka:9092"
@@ -57,6 +58,7 @@ services:
             context: .
             dockerfile: Dockerfile.subscriber
         environment:
+            GITHUB_TOKEN: ${GITHUB_TOKEN}
             SUBSCRIBER_PORT: "50053"
             DB_DSN: "postgres://postgres:postgres@postgres-subscriber:5432/subscribers?sslmode=disable"
         image: subscriber
