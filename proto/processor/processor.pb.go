@@ -22,6 +22,61 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type RepositoryStatus int32
+
+const (
+	RepositoryStatus_REPOSITORY_STATUS_UNSPECIFIED RepositoryStatus = 0
+	RepositoryStatus_REPOSITORY_STATUS_READY       RepositoryStatus = 1
+	RepositoryStatus_REPOSITORY_STATUS_PREPARING   RepositoryStatus = 2
+	RepositoryStatus_REPOSITORY_STATUS_NOT_FOUND   RepositoryStatus = 3
+	RepositoryStatus_REPOSITORY_STATUS_FAILED      RepositoryStatus = 4
+)
+
+// Enum value maps for RepositoryStatus.
+var (
+	RepositoryStatus_name = map[int32]string{
+		0: "REPOSITORY_STATUS_UNSPECIFIED",
+		1: "REPOSITORY_STATUS_READY",
+		2: "REPOSITORY_STATUS_PREPARING",
+		3: "REPOSITORY_STATUS_NOT_FOUND",
+		4: "REPOSITORY_STATUS_FAILED",
+	}
+	RepositoryStatus_value = map[string]int32{
+		"REPOSITORY_STATUS_UNSPECIFIED": 0,
+		"REPOSITORY_STATUS_READY":       1,
+		"REPOSITORY_STATUS_PREPARING":   2,
+		"REPOSITORY_STATUS_NOT_FOUND":   3,
+		"REPOSITORY_STATUS_FAILED":      4,
+	}
+)
+
+func (x RepositoryStatus) Enum() *RepositoryStatus {
+	p := new(RepositoryStatus)
+	*p = x
+	return p
+}
+
+func (x RepositoryStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RepositoryStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_proto_processor_processor_proto_enumTypes[0].Descriptor()
+}
+
+func (RepositoryStatus) Type() protoreflect.EnumType {
+	return &file_proto_processor_processor_proto_enumTypes[0]
+}
+
+func (x RepositoryStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RepositoryStatus.Descriptor instead.
+func (RepositoryStatus) EnumDescriptor() ([]byte, []int) {
+	return file_proto_processor_processor_proto_rawDescGZIP(), []int{0}
+}
+
 type GetRepositoryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Owner         string                 `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
@@ -74,20 +129,100 @@ func (x *GetRepositoryRequest) GetRepo() string {
 	return ""
 }
 
-type GetRepositoryResponse struct {
+type Repository struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	Stars         int32                  `protobuf:"varint,3,opt,name=stars,proto3" json:"stars,omitempty"`
 	Forks         int32                  `protobuf:"varint,4,opt,name=forks,proto3" json:"forks,omitempty"`
 	CreateDate    *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=create_date,json=createDate,proto3" json:"create_date,omitempty"`
+	Status        RepositoryStatus       `protobuf:"varint,6,opt,name=status,proto3,enum=processor.RepositoryStatus" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Repository) Reset() {
+	*x = Repository{}
+	mi := &file_proto_processor_processor_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Repository) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Repository) ProtoMessage() {}
+
+func (x *Repository) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_processor_processor_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Repository.ProtoReflect.Descriptor instead.
+func (*Repository) Descriptor() ([]byte, []int) {
+	return file_proto_processor_processor_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Repository) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Repository) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Repository) GetStars() int32 {
+	if x != nil {
+		return x.Stars
+	}
+	return 0
+}
+
+func (x *Repository) GetForks() int32 {
+	if x != nil {
+		return x.Forks
+	}
+	return 0
+}
+
+func (x *Repository) GetCreateDate() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreateDate
+	}
+	return nil
+}
+
+func (x *Repository) GetStatus() RepositoryStatus {
+	if x != nil {
+		return x.Status
+	}
+	return RepositoryStatus_REPOSITORY_STATUS_UNSPECIFIED
+}
+
+type GetRepositoryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Repository    *Repository            `protobuf:"bytes,1,opt,name=repository,proto3" json:"repository,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetRepositoryResponse) Reset() {
 	*x = GetRepositoryResponse{}
-	mi := &file_proto_processor_processor_proto_msgTypes[1]
+	mi := &file_proto_processor_processor_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -99,7 +234,7 @@ func (x *GetRepositoryResponse) String() string {
 func (*GetRepositoryResponse) ProtoMessage() {}
 
 func (x *GetRepositoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_processor_processor_proto_msgTypes[1]
+	mi := &file_proto_processor_processor_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -112,40 +247,12 @@ func (x *GetRepositoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepositoryResponse.ProtoReflect.Descriptor instead.
 func (*GetRepositoryResponse) Descriptor() ([]byte, []int) {
-	return file_proto_processor_processor_proto_rawDescGZIP(), []int{1}
+	return file_proto_processor_processor_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetRepositoryResponse) GetName() string {
+func (x *GetRepositoryResponse) GetRepository() *Repository {
 	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *GetRepositoryResponse) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *GetRepositoryResponse) GetStars() int32 {
-	if x != nil {
-		return x.Stars
-	}
-	return 0
-}
-
-func (x *GetRepositoryResponse) GetForks() int32 {
-	if x != nil {
-		return x.Forks
-	}
-	return 0
-}
-
-func (x *GetRepositoryResponse) GetCreateDate() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreateDate
+		return x.Repository
 	}
 	return nil
 }
@@ -158,7 +265,7 @@ type PingRequest struct {
 
 func (x *PingRequest) Reset() {
 	*x = PingRequest{}
-	mi := &file_proto_processor_processor_proto_msgTypes[2]
+	mi := &file_proto_processor_processor_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -170,7 +277,7 @@ func (x *PingRequest) String() string {
 func (*PingRequest) ProtoMessage() {}
 
 func (x *PingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_processor_processor_proto_msgTypes[2]
+	mi := &file_proto_processor_processor_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -183,7 +290,7 @@ func (x *PingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingRequest.ProtoReflect.Descriptor instead.
 func (*PingRequest) Descriptor() ([]byte, []int) {
-	return file_proto_processor_processor_proto_rawDescGZIP(), []int{2}
+	return file_proto_processor_processor_proto_rawDescGZIP(), []int{3}
 }
 
 type PingResponse struct {
@@ -195,7 +302,7 @@ type PingResponse struct {
 
 func (x *PingResponse) Reset() {
 	*x = PingResponse{}
-	mi := &file_proto_processor_processor_proto_msgTypes[3]
+	mi := &file_proto_processor_processor_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -207,7 +314,7 @@ func (x *PingResponse) String() string {
 func (*PingResponse) ProtoMessage() {}
 
 func (x *PingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_processor_processor_proto_msgTypes[3]
+	mi := &file_proto_processor_processor_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -220,7 +327,7 @@ func (x *PingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingResponse.ProtoReflect.Descriptor instead.
 func (*PingResponse) Descriptor() ([]byte, []int) {
-	return file_proto_processor_processor_proto_rawDescGZIP(), []int{3}
+	return file_proto_processor_processor_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *PingResponse) GetReply() string {
@@ -238,7 +345,7 @@ type GetSubscribedRepositoryRequest struct {
 
 func (x *GetSubscribedRepositoryRequest) Reset() {
 	*x = GetSubscribedRepositoryRequest{}
-	mi := &file_proto_processor_processor_proto_msgTypes[4]
+	mi := &file_proto_processor_processor_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -250,7 +357,7 @@ func (x *GetSubscribedRepositoryRequest) String() string {
 func (*GetSubscribedRepositoryRequest) ProtoMessage() {}
 
 func (x *GetSubscribedRepositoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_processor_processor_proto_msgTypes[4]
+	mi := &file_proto_processor_processor_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -263,19 +370,19 @@ func (x *GetSubscribedRepositoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSubscribedRepositoryRequest.ProtoReflect.Descriptor instead.
 func (*GetSubscribedRepositoryRequest) Descriptor() ([]byte, []int) {
-	return file_proto_processor_processor_proto_rawDescGZIP(), []int{4}
+	return file_proto_processor_processor_proto_rawDescGZIP(), []int{5}
 }
 
 type GetSubscribedRepositoryResponse struct {
-	state         protoimpl.MessageState   `protogen:"open.v1"`
-	Repositories  []*GetRepositoryResponse `protobuf:"bytes,1,rep,name=repositories,proto3" json:"repositories,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Repositories  []*Repository          `protobuf:"bytes,1,rep,name=repositories,proto3" json:"repositories,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetSubscribedRepositoryResponse) Reset() {
 	*x = GetSubscribedRepositoryResponse{}
-	mi := &file_proto_processor_processor_proto_msgTypes[5]
+	mi := &file_proto_processor_processor_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -287,7 +394,7 @@ func (x *GetSubscribedRepositoryResponse) String() string {
 func (*GetSubscribedRepositoryResponse) ProtoMessage() {}
 
 func (x *GetSubscribedRepositoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_processor_processor_proto_msgTypes[5]
+	mi := &file_proto_processor_processor_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -300,10 +407,10 @@ func (x *GetSubscribedRepositoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSubscribedRepositoryResponse.ProtoReflect.Descriptor instead.
 func (*GetSubscribedRepositoryResponse) Descriptor() ([]byte, []int) {
-	return file_proto_processor_processor_proto_rawDescGZIP(), []int{5}
+	return file_proto_processor_processor_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *GetSubscribedRepositoryResponse) GetRepositories() []*GetRepositoryResponse {
+func (x *GetSubscribedRepositoryResponse) GetRepositories() []*Repository {
 	if x != nil {
 		return x.Repositories
 	}
@@ -317,20 +424,32 @@ const file_proto_processor_processor_proto_rawDesc = "" +
 	"\x1fproto/processor/processor.proto\x12\tprocessor\x1a\x1fgoogle/protobuf/timestamp.proto\"@\n" +
 	"\x14GetRepositoryRequest\x12\x14\n" +
 	"\x05owner\x18\x01 \x01(\tR\x05owner\x12\x12\n" +
-	"\x04repo\x18\x02 \x01(\tR\x04repo\"\xb6\x01\n" +
-	"\x15GetRepositoryResponse\x12\x12\n" +
+	"\x04repo\x18\x02 \x01(\tR\x04repo\"\xe0\x01\n" +
+	"\n" +
+	"Repository\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x14\n" +
 	"\x05stars\x18\x03 \x01(\x05R\x05stars\x12\x14\n" +
 	"\x05forks\x18\x04 \x01(\x05R\x05forks\x12;\n" +
 	"\vcreate_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"createDate\"\r\n" +
+	"createDate\x123\n" +
+	"\x06status\x18\x06 \x01(\x0e2\x1b.processor.RepositoryStatusR\x06status\"N\n" +
+	"\x15GetRepositoryResponse\x125\n" +
+	"\n" +
+	"repository\x18\x01 \x01(\v2\x15.processor.RepositoryR\n" +
+	"repository\"\r\n" +
 	"\vPingRequest\"$\n" +
 	"\fPingResponse\x12\x14\n" +
 	"\x05reply\x18\x01 \x01(\tR\x05reply\" \n" +
-	"\x1eGetSubscribedRepositoryRequest\"g\n" +
-	"\x1fGetSubscribedRepositoryResponse\x12D\n" +
-	"\frepositories\x18\x01 \x03(\v2 .processor.GetRepositoryResponseR\frepositories2\x91\x02\n" +
+	"\x1eGetSubscribedRepositoryRequest\"\\\n" +
+	"\x1fGetSubscribedRepositoryResponse\x129\n" +
+	"\frepositories\x18\x01 \x03(\v2\x15.processor.RepositoryR\frepositories*\xb2\x01\n" +
+	"\x10RepositoryStatus\x12!\n" +
+	"\x1dREPOSITORY_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17REPOSITORY_STATUS_READY\x10\x01\x12\x1f\n" +
+	"\x1bREPOSITORY_STATUS_PREPARING\x10\x02\x12\x1f\n" +
+	"\x1bREPOSITORY_STATUS_NOT_FOUND\x10\x03\x12\x1c\n" +
+	"\x18REPOSITORY_STATUS_FAILED\x10\x042\x91\x02\n" +
 	"\x10ProcessorService\x12R\n" +
 	"\rGetRepository\x12\x1f.processor.GetRepositoryRequest\x1a .processor.GetRepositoryResponse\x12p\n" +
 	"\x17GetSubscribedRepository\x12).processor.GetSubscribedRepositoryRequest\x1a*.processor.GetSubscribedRepositoryResponse\x127\n" +
@@ -348,30 +467,35 @@ func file_proto_processor_processor_proto_rawDescGZIP() []byte {
 	return file_proto_processor_processor_proto_rawDescData
 }
 
-var file_proto_processor_processor_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_proto_processor_processor_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_proto_processor_processor_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_processor_processor_proto_goTypes = []any{
-	(*GetRepositoryRequest)(nil),            // 0: processor.GetRepositoryRequest
-	(*GetRepositoryResponse)(nil),           // 1: processor.GetRepositoryResponse
-	(*PingRequest)(nil),                     // 2: processor.PingRequest
-	(*PingResponse)(nil),                    // 3: processor.PingResponse
-	(*GetSubscribedRepositoryRequest)(nil),  // 4: processor.GetSubscribedRepositoryRequest
-	(*GetSubscribedRepositoryResponse)(nil), // 5: processor.GetSubscribedRepositoryResponse
-	(*timestamppb.Timestamp)(nil),           // 6: google.protobuf.Timestamp
+	(RepositoryStatus)(0),                   // 0: processor.RepositoryStatus
+	(*GetRepositoryRequest)(nil),            // 1: processor.GetRepositoryRequest
+	(*Repository)(nil),                      // 2: processor.Repository
+	(*GetRepositoryResponse)(nil),           // 3: processor.GetRepositoryResponse
+	(*PingRequest)(nil),                     // 4: processor.PingRequest
+	(*PingResponse)(nil),                    // 5: processor.PingResponse
+	(*GetSubscribedRepositoryRequest)(nil),  // 6: processor.GetSubscribedRepositoryRequest
+	(*GetSubscribedRepositoryResponse)(nil), // 7: processor.GetSubscribedRepositoryResponse
+	(*timestamppb.Timestamp)(nil),           // 8: google.protobuf.Timestamp
 }
 var file_proto_processor_processor_proto_depIdxs = []int32{
-	6, // 0: processor.GetRepositoryResponse.create_date:type_name -> google.protobuf.Timestamp
-	1, // 1: processor.GetSubscribedRepositoryResponse.repositories:type_name -> processor.GetRepositoryResponse
-	0, // 2: processor.ProcessorService.GetRepository:input_type -> processor.GetRepositoryRequest
-	4, // 3: processor.ProcessorService.GetSubscribedRepository:input_type -> processor.GetSubscribedRepositoryRequest
-	2, // 4: processor.ProcessorService.Ping:input_type -> processor.PingRequest
-	1, // 5: processor.ProcessorService.GetRepository:output_type -> processor.GetRepositoryResponse
-	5, // 6: processor.ProcessorService.GetSubscribedRepository:output_type -> processor.GetSubscribedRepositoryResponse
-	3, // 7: processor.ProcessorService.Ping:output_type -> processor.PingResponse
-	5, // [5:8] is the sub-list for method output_type
-	2, // [2:5] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	8, // 0: processor.Repository.create_date:type_name -> google.protobuf.Timestamp
+	0, // 1: processor.Repository.status:type_name -> processor.RepositoryStatus
+	2, // 2: processor.GetRepositoryResponse.repository:type_name -> processor.Repository
+	2, // 3: processor.GetSubscribedRepositoryResponse.repositories:type_name -> processor.Repository
+	1, // 4: processor.ProcessorService.GetRepository:input_type -> processor.GetRepositoryRequest
+	6, // 5: processor.ProcessorService.GetSubscribedRepository:input_type -> processor.GetSubscribedRepositoryRequest
+	4, // 6: processor.ProcessorService.Ping:input_type -> processor.PingRequest
+	3, // 7: processor.ProcessorService.GetRepository:output_type -> processor.GetRepositoryResponse
+	7, // 8: processor.ProcessorService.GetSubscribedRepository:output_type -> processor.GetSubscribedRepositoryResponse
+	5, // 9: processor.ProcessorService.Ping:output_type -> processor.PingResponse
+	7, // [7:10] is the sub-list for method output_type
+	4, // [4:7] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_proto_processor_processor_proto_init() }
@@ -384,13 +508,14 @@ func file_proto_processor_processor_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_processor_processor_proto_rawDesc), len(file_proto_processor_processor_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   6,
+			NumEnums:      1,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_proto_processor_processor_proto_goTypes,
 		DependencyIndexes: file_proto_processor_processor_proto_depIdxs,
+		EnumInfos:         file_proto_processor_processor_proto_enumTypes,
 		MessageInfos:      file_proto_processor_processor_proto_msgTypes,
 	}.Build()
 	File_proto_processor_processor_proto = out.File

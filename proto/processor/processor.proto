@@ -17,12 +17,25 @@ message GetRepositoryRequest {
   string repo = 2;
 }
 
-message GetRepositoryResponse {
+enum RepositoryStatus {
+  REPOSITORY_STATUS_UNSPECIFIED = 0;
+  REPOSITORY_STATUS_READY = 1;
+  REPOSITORY_STATUS_PREPARING = 2;
+  REPOSITORY_STATUS_NOT_FOUND = 3;
+  REPOSITORY_STATUS_FAILED = 4;
+}
+
+message Repository {
   string name = 1;
   string description = 2;
   int32 stars = 3;
   int32 forks = 4;
   google.protobuf.Timestamp create_date = 5;
+  RepositoryStatus status = 6;
+}
+
+message GetRepositoryResponse {
+  Repository repository = 1;
 }
 
 message PingRequest {}
@@ -34,5 +47,5 @@ message PingResponse {
 message GetSubscribedRepositoryRequest {}
 
 message GetSubscribedRepositoryResponse {
-  repeated GetRepositoryResponse repositories = 1;
+  repeated Repository repositories = 1;
 }
