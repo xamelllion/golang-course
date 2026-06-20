@@ -15,8 +15,8 @@ import (
 )
 
 type RepositoryUseCase interface {
-	GetRepository(owner, repo string) (domain.Repository, error)
-	GetSubscribedRepository() ([]domain.Repository, error)
+	GetRepository(owner, repo string) (*domain.Repository, error)
+	GetSubscribedRepository() ([](*domain.Repository), error)
 }
 
 type PingUseCase interface {
@@ -64,6 +64,7 @@ func writeJSONError(w http.ResponseWriter, status int, message string) {
 //	@Produce		json
 //	@Param			url	query		string	true	"GitHub repository URL"
 //	@Success		200		{object}	domain.Repository
+//	@Success		202		"Repository data is being prepared"
 //	@Failure		400		{object}	controller.GetRepository.HTTPError
 //	@Failure		404		{object}	controller.GetRepository.HTTPError
 //	@Failure		502		{object}	controller.GetRepository.HTTPError
@@ -136,6 +137,12 @@ func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 			writeJSONError(w, http.StatusInternalServerError, "internal error")
 		}
 
+		return
+	}
+
+	if repository == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusAccepted)
 		return
 	}
 
@@ -336,7 +343,14 @@ func (h *Handler) GetSubscribedRepositories(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	reposFiltered := []domain.Repository{}
+	for _, repo := range repos {
+		if repo != nil {
+			reposFiltered = append(reposFiltered, *repo)
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(repos)
+	_ = json.NewEncoder(w).Encode(reposFiltered)
 }

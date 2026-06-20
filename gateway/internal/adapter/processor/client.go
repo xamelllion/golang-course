@@ -2,6 +2,7 @@ package processor
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/xamelllion/golang-course/gateway/internal/config"
@@ -36,46 +37,67 @@ func NewProcessor(cfg config.Config, log *slog.Logger) Processor {
 	}
 }
 
-func (p Processor) GetRepository(owner, repo string) (domain.Repository, error) {
-	p.log.Debug("adapter: get repository", "owner", owner, "repo", repo)
-	repository, error := p.client.GetRepository(context.Background(), &pbProcessor.GetRepositoryRequest{Owner: owner, Repo: repo})
+func (p Processor) GetRepository(owner, repoName string) (*domain.Repository, error) {
+	p.log.Debug("adapter: get repository", "owner", owner, "repo", repoName)
+	res, error := p.client.GetRepository(context.Background(), &pbProcessor.GetRepositoryRequest{Owner: owner, Repo: repoName})
 	if error != nil {
 		switch status.Code(error) {
 		case codes.NotFound:
-			return domain.Repository{}, apperror.New(apperror.CodeNotFound, error.Error())
+			return nil, apperror.New(apperror.CodeNotFound, error.Error())
 		case codes.InvalidArgument:
-			return domain.Repository{}, apperror.New(apperror.CodeInvalidArgument, error.Error())
+			return nil, apperror.New(apperror.CodeInvalidArgument, error.Error())
 		case codes.Unavailable:
-			return domain.Repository{}, apperror.New(apperror.CodeUnavailable, error.Error())
+			return nil, apperror.New(apperror.CodeUnavailable, error.Error())
 		default:
-			return domain.Repository{}, apperror.New(apperror.CodeInternal, error.Error())
+			return nil, apperror.New(apperror.CodeInternal, error.Error())
 		}
 	}
 
-	return domain.Repository{
-		Name:        repository.Name,
-		Description: repository.Description,
-		Stars:       repository.Stars,
-		Forks:       repository.Forks,
-		CreateDate:  repository.CreateDate.AsTime(),
-	}, nil
-}
+	repo := res.Repository
 
-func (p Processor) GetSubscribedRepository() ([]domain.Repository, error) {
-	p.log.Debug("adapter: get subscribed repository")
-	repos, error := p.client.GetSubscribedRepository(context.Background(), &pbProcessor.GetSubscribedRepositoryRequest{})
-	if error != nil {
-		return nil, apperror.FromGRPC(error, "processor get subscribed repository")
-	}
-
-	result := make([]domain.Repository, len(repos.Repositories))
-	for k, repo := range repos.Repositories {
-		result[k] = domain.Repository{
+	switch repo.Status {
+	case pbProcessor.RepositoryStatus_REPOSITORY_STATUS_READY:
+		return &domain.Repository{
 			Name:        repo.Name,
 			Description: repo.Description,
 			Stars:       repo.Stars,
 			Forks:       repo.Forks,
 			CreateDate:  repo.CreateDate.AsTime(),
+		}, nil
+	case pbProcessor.RepositoryStatus_REPOSITORY_STATUS_NOT_FOUND:
+		return nil, apperror.New(apperror.CodeNotFound, error.Error())
+	case pbProcessor.RepositoryStatus_REPOSITORY_STATUS_PREPARING:
+		return nil, nil
+	default:
+		panic(fmt.Sprintf("unknown error %v", repo))
+	}
+}
+
+func (p Processor) GetSubscribedRepository() ([](*domain.Repository), error) {
+	p.log.Debug("adapter: get subscribed repositories")
+	repos, error := p.client.GetSubscribedRepository(context.Background(), &pbProcessor.GetSubscribedRepositoryRequest{})
+	if error != nil {
+		return nil, apperror.FromGRPC(error, "processor get subscribed repository")
+	}
+
+	result := make([](*domain.Repository), len(repos.Repositories))
+	for k, repo := range repos.Repositories {
+		switch repo.Status {
+		case pbProcessor.RepositoryStatus_REPOSITORY_STATUS_READY:
+			result[k] = &domain.Repository{
+				Name:        repo.Name,
+				Description: repo.Description,
+				Stars:       repo.Stars,
+				Forks:       repo.Forks,
+				CreateDate:  repo.CreateDate.AsTime(),
+			}
+
+			continue
+		case pbProcessor.RepositoryStatus_REPOSITORY_STATUS_PREPARING:
+			result[k] = nil
+			continue
+		default:
+			panic(fmt.Sprintf("unexpected error %v", repo))
 		}
 	}
 

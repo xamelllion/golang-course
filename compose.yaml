@@ -38,7 +38,8 @@ services:
         environment:
             COLLECTOR_ADDR: "collector:50052"
             PROCESSOR_PORT: "50051"
-            KAFKA_BROKERS: "kafka:9092"
+            KAFKA_BROKER: "kafka:9092"
+            DB_DSN: "postgres://postgres:postgres@postgres-processor:5432/repositories?sslmode=disable"
         image: processor
         ports:
             - "50051:50051"
@@ -47,6 +48,8 @@ services:
                 condition: service_completed_successfully
             collector:
                 condition: service_started
+            migrate-processor:
+                condition: service_completed_successfully
 
     subscriber:
         build:
@@ -72,7 +75,7 @@ services:
         ports:
             - "5432:5432"
         volumes:
-            - postgres_data:/var/lib/postgresql/data
+            - postgres_data_subscriber:/var/lib/postgresql/data
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres -d subscribers"]
             interval: 5s
@@ -93,6 +96,40 @@ services:
                 "/migrations",
                 "-database",
                 "postgres://postgres:postgres@postgres-subscriber:5432/subscribers?sslmode=disable",
+                "up",
+            ]
+
+    postgres-processor:
+        image: postgres:17-alpine
+        container_name: postgres-processor
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: repositories
+        ports:
+            - "5433:5432"
+        volumes:
+            - postgres_data_processor:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres -d repositories"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
+
+    migrate-processor:
+        image: migrate/migrate:v4.19.1
+        container_name: migrate-processor
+        depends_on:
+            postgres-processor:
+                condition: service_healthy
+        volumes:
+            - ./processor/internal/adapter/postgres/migrations:/migrations:ro,Z
+        command:
+            [
+                "-path",
+                "/migrations",
+                "-database",
+                "postgres://postgres:postgres@postgres-processor:5432/repositories?sslmode=disable",
                 "up",
             ]
 
@@ -160,4 +197,5 @@ services:
                 echo "Kafka topics created"
 
 volumes:
-    postgres_data:
+    postgres_data_processor:
+    postgres_data_subscriber:

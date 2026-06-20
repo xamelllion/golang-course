@@ -89,6 +89,9 @@ const docTemplate = `{
                             "$ref": "#/definitions/domain.Repository"
                         }
                     },
+                    "202": {
+                        "description": "Repository data is being prepared"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
