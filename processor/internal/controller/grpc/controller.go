@@ -11,9 +11,20 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func fromDomainRepo(repo *domain.Repository) *pbProcessor.Repository {
+	return &pbProcessor.Repository{
+		Name:        repo.Name,
+		Description: repo.Description,
+		Stars:       repo.Stars,
+		Forks:       repo.Forks,
+		CreateDate:  timestamppb.New(repo.CreateDate),
+		Status:      pbProcessor.RepositoryStatus_REPOSITORY_STATUS_READY,
+	}
+}
+
 type RepositoryUsecase interface {
-	GetRepository(owner, repo string) (domain.Repository, error)
-	GetSubscribedRepository() ([]domain.Repository, error)
+	GetRepository(owner, repo string) (*domain.Repository, error)
+	GetSubscribedRepository() ([](*domain.Repository), error)
 }
 
 type PingUsecase interface {
@@ -40,12 +51,17 @@ func (s *Server) GetRepository(_ context.Context, req *pbProcessor.GetRepository
 		return nil, status.Error(apperror.ToGRPCCode(error), error.Error())
 	}
 
+	// task created
+	if repo == nil {
+		return &pbProcessor.GetRepositoryResponse{
+			Repository: &pbProcessor.Repository{
+				Status: pbProcessor.RepositoryStatus_REPOSITORY_STATUS_PREPARING,
+			},
+		}, nil
+	}
+
 	return &pbProcessor.GetRepositoryResponse{
-		Name:        repo.Name,
-		Description: repo.Description,
-		Stars:       repo.Stars,
-		Forks:       repo.Forks,
-		CreateDate:  timestamppb.New(repo.CreateDate),
+		Repository: fromDomainRepo(repo),
 	}, nil
 }
 
@@ -55,15 +71,17 @@ func (s *Server) GetSubscribedRepository(_ context.Context, _ *pbProcessor.GetSu
 		return nil, status.Error(apperror.ToGRPCCode(error), error.Error())
 	}
 
-	result := make([]*pbProcessor.GetRepositoryResponse, len(repos))
+	result := make([]*pbProcessor.Repository, len(repos))
 	for k, repo := range repos {
-		result[k] = &pbProcessor.GetRepositoryResponse{
-			Name:        repo.Name,
-			Description: repo.Description,
-			Stars:       repo.Stars,
-			Forks:       repo.Forks,
-			CreateDate:  timestamppb.New(repo.CreateDate),
+		if repo == nil {
+			result[k] = &pbProcessor.Repository{
+				Status: pbProcessor.RepositoryStatus_REPOSITORY_STATUS_PREPARING,
+			}
+
+			continue
 		}
+
+		result[k] = fromDomainRepo(repo)
 	}
 
 	return &pbProcessor.GetSubscribedRepositoryResponse{

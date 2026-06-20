@@ -53,6 +53,15 @@ func (a PostgresAdapter) GetRepositories(ctx context.Context) ([]domain.Reposito
 	return result, nil
 }
 
+func (a PostgresAdapter) GetRepository(ctx context.Context, owner, repoName string) (domain.Repository, error) {
+	repo, err := a.Query.GetRepository(ctx, processor.GetRepositoryParams{Owner: owner, Repo: repoName})
+	if err != nil {
+		return domain.Repository{}, apperror.Wrap("get repo postgres", err)
+	}
+
+	return repoToDomain(repo), nil
+}
+
 func (a PostgresAdapter) IsExistsRepo(ctx context.Context, owner, repo string) (bool, error) {
 	result, err := a.Query.IsExistsRepository(ctx, processor.IsExistsRepositoryParams{Owner: owner, Repo: repo})
 	if err != nil {

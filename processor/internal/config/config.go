@@ -5,7 +5,8 @@ import "os"
 type Config struct {
 	Port          string
 	CollectorAddr string
-	KafkaBrokers  string
+	KafkaBroker  string
+	DB_DSN        string
 }
 
 func Load() Config {
@@ -13,7 +14,8 @@ func Load() Config {
 
 	config.Port = getenv("PROCESSOR_PORT", "50051")
 	config.CollectorAddr = getenv("COLLECTOR_ADDR", "localhost:50052")
-	config.KafkaBrokers = getenv("KAFKA_BROKERS", "localhost:9092")
+	config.KafkaBroker = getenv("KAFKA_BROKER", "localhost:9092")
+	config.DB_DSN = getenv("DB_DSN", "postgres://postgres:postgres@localhost:5433/repositories?sslmode=disable")
 
 	return config
 }

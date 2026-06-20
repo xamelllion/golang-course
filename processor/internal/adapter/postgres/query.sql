@@ -1,6 +1,11 @@
 -- name: GetRepositories :many
 SELECT * FROM repositories;
 
+-- name: GetRepository :one
+SELECT * FROM repositories
+WHERE owner = $1 AND repo = $2;
+
+
 -- name: IsExistsRepository :one
 SELECT EXISTS(
     SELECT 1 FROM repositories

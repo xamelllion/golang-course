@@ -102,6 +102,33 @@ func (q *Queries) GetRepositories(ctx context.Context) ([]Repository, error) {
 	return items, nil
 }
 
+const getRepository = `-- name: GetRepository :one
+SELECT id, owner, repo, description, stars, forks, created_at, added_at, updated_at FROM repositories
+WHERE owner = $1 AND repo = $2
+`
+
+type GetRepositoryParams struct {
+	Owner string
+	Repo  string
+}
+
+func (q *Queries) GetRepository(ctx context.Context, arg GetRepositoryParams) (Repository, error) {
+	row := q.db.QueryRow(ctx, getRepository, arg.Owner, arg.Repo)
+	var i Repository
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Repo,
+		&i.Description,
+		&i.Stars,
+		&i.Forks,
+		&i.CreatedAt,
+		&i.AddedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const isExistsRepository = `-- name: IsExistsRepository :one
 SELECT EXISTS(
     SELECT 1 FROM repositories
