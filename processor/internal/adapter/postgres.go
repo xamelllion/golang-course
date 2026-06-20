@@ -87,3 +87,20 @@ func (a PostgresAdapter) CreateRepo(ctx context.Context, repo domain.Repository,
 
 	return nil
 }
+
+func (a PostgresAdapter) UpdateRepo(ctx context.Context, repo domain.Repository, owner, repoName string) error {
+	err := a.Query.UpdateRepository(ctx, processor.UpdateRepositoryParams{
+		Owner:       owner,
+		Repo:        repoName,
+		Description: repo.Description,
+		Stars:       repo.Stars,
+		Forks:       repo.Forks,
+		CreatedAt:   pgtype.Timestamptz{Time: repo.CreateDate, Valid: true},
+	})
+
+	if err != nil {
+		return apperror.Wrap("update repo postgres", err)
+	}
+
+	return nil
+}

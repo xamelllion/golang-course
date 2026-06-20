@@ -5,6 +5,14 @@ SELECT * FROM repositories;
 SELECT * FROM repositories
 WHERE owner = $1 AND repo = $2;
 
+-- name: UpdateRepository :exec
+UPDATE repositories
+SET
+    description = $3,
+    stars = $4,
+    forks = $5,
+    created_at = $6
+WHERE owner = $1 AND repo = $2;
 
 -- name: IsExistsRepository :one
 SELECT EXISTS(

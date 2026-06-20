@@ -147,3 +147,34 @@ func (q *Queries) IsExistsRepository(ctx context.Context, arg IsExistsRepository
 	err := row.Scan(&exists)
 	return exists, err
 }
+
+const updateRepository = `-- name: UpdateRepository :exec
+UPDATE repositories
+SET
+    description = $3,
+    stars = $4,
+    forks = $5,
+    created_at = $6
+WHERE owner = $1 AND repo = $2
+`
+
+type UpdateRepositoryParams struct {
+	Owner       string
+	Repo        string
+	Description string
+	Stars       int32
+	Forks       int32
+	CreatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateRepository(ctx context.Context, arg UpdateRepositoryParams) error {
+	_, err := q.db.Exec(ctx, updateRepository,
+		arg.Owner,
+		arg.Repo,
+		arg.Description,
+		arg.Stars,
+		arg.Forks,
+		arg.CreatedAt,
+	)
+	return err
+}
