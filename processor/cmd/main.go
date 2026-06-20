@@ -9,7 +9,8 @@ import (
 	kafkaClient "github.com/xamelllion/golang-course/internal/kafka"
 	"github.com/xamelllion/golang-course/processor/internal/adapter"
 	"github.com/xamelllion/golang-course/processor/internal/config"
-	controller "github.com/xamelllion/golang-course/processor/internal/controller/grpc"
+	controllerGRPC "github.com/xamelllion/golang-course/processor/internal/controller/grpc"
+	controllerKafka "github.com/xamelllion/golang-course/processor/internal/controller/kafka"
 	"github.com/xamelllion/golang-course/processor/internal/usecase"
 	pbProcessor "github.com/xamelllion/golang-course/proto/processor"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -33,6 +34,7 @@ func main() {
 	pool, err := pgxpool.New(context.Background(), cfg.DB_DSN)
 	if err != nil {
 		log.Fatalf("create pg pool: %v", err)
+		panic(err)
 	}
 	defer pool.Close()
 
@@ -41,11 +43,19 @@ func main() {
 
 	kafkaRequestProducer := kafkaClient.NewKafkaProducer([]string{cfg.KafkaBroker}, "repo.tasks.request")
 	kafkaResponseConsumer := kafkaClient.NewKafkaReader([]string{cfg.KafkaBroker}, "repo.tasks.response", "processor")
-	kafka := adapter.NewKafkaAdapter(kafkaRequestProducer, kafkaResponseConsumer)
+	kafkaAdapter := adapter.NewKafkaAdapter(kafkaRequestProducer, kafkaResponseConsumer)
 
-	repositoryUsecase := usecase.NewRepositoryUsecase(postgres, kafka, subscriber)
+	repositoryUsecase := usecase.NewRepositoryUsecase(postgres, kafkaAdapter, subscriber)
 	pingUsecase := usecase.NewPingUsecase()
-	server := controller.NewServer(repositoryUsecase, pingUsecase)
+	server := controllerGRPC.NewServer(repositoryUsecase, pingUsecase)
+
+	kafkaController := controllerKafka.NewKafkaController(repositoryUsecase, kafkaResponseConsumer)
+
+	go func() {
+		if err := kafkaController.Run(context.Background()); err != nil {
+			log.Print("kafka error $v", err)
+		}
+	}()
 
 	grpcServer := grpc.NewServer()
 	pbProcessor.RegisterProcessorServiceServer(grpcServer, server)

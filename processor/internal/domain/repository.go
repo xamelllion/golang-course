@@ -2,9 +2,18 @@ package domain
 
 import "time"
 
+type TaskResponse struct {
+	Owner       string
+	Repo        string
+	Description string
+	Stars       int32
+	Forks       int32
+	CreateDate  time.Time
+}
+
 type Subscription struct {
 	Owner string
-	Repo string
+	Repo  string
 }
 
 type Repository struct {
@@ -12,5 +21,5 @@ type Repository struct {
 	Description string
 	Stars       int32
 	Forks       int32
-	CreateDate time.Time
+	CreateDate  time.Time
 }

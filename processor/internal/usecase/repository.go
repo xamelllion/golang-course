@@ -11,6 +11,7 @@ type RepoKeeper interface {
 	GetRepository(ctx context.Context, owner, repoName string) (domain.Repository, error)
 	IsExistsRepo(ctx context.Context, owner, repo string) (bool, error)
 	CreateRepo(ctx context.Context, repo domain.Repository, owner, repoName string) error
+	UpdateRepo(ctx context.Context, repo domain.Repository, owner, repoName string) error
 }
 
 type Tasker interface {
@@ -76,4 +77,25 @@ func (r *RepositoryUseCase) GetSubscribedRepository() ([](*domain.Repository), e
 	}
 
 	return result, nil
+}
+
+func (r *RepositoryUseCase) ProcessTaskReponse(task domain.TaskResponse) error {
+	ok, err := r.repoKeeper.IsExistsRepo(context.Background(), task.Owner, task.Repo)
+	if err != nil {
+		return err
+	}
+
+	repo := domain.Repository{
+		Name:        task.Repo,
+		Description: task.Description,
+		Stars:       task.Stars,
+		Forks:       task.Forks,
+		CreateDate:  task.CreateDate,
+	}
+
+	if ok {
+		return r.repoKeeper.UpdateRepo(context.Background(), repo, task.Owner, task.Repo)
+	}
+
+	return r.repoKeeper.CreateRepo(context.Background(), repo, task.Owner, task.Repo)
 }

@@ -1,4 +1,4 @@
-package adapter
+package controllerKafka
 
 import (
 	"context"
@@ -10,32 +10,24 @@ import (
 	"github.com/xamelllion/golang-course/processor/internal/domain"
 )
 
-type KafkaAdapter struct {
-	producer kafkaClient.KafkaProducer
+type Tasker interface {
+	ProcessTaskReponse(domain.TaskResponse) error
+}
+
+type KafkaController struct {
+	tasker   Tasker
 	consumer kafkaClient.KafkaConsumer
 }
 
-func NewKafkaAdapter(producer kafkaClient.KafkaProducer, consumer kafkaClient.KafkaConsumer) KafkaAdapter {
-	return KafkaAdapter{producer: producer, consumer: consumer}
+func NewKafkaController(tasker Tasker, consumer kafkaClient.KafkaConsumer) KafkaController {
+	return KafkaController{
+		tasker:   tasker,
+		consumer: consumer,
+	}
 }
 
-func (ka KafkaAdapter) SendTaskRequest(owner, repo string) error {
-	req := kafkaClient.RepoTaskRequest{
-		Owner: owner,
-		Repo:  repo,
-	}
-
-	err := ka.producer.Send(context.Background(), "repo_request", req)
-	if err != nil {
-		return apperror.WrapCode(apperror.CodeInternal, "send kafka task requests", err)
-	}
-	log.Printf("sended task request %v", req)
-
-	return nil
-}
-
-func (ka KafkaAdapter) RunGetTaskResponse(ctx context.Context, handle func(ctx context.Context, task domain.TaskResponse) error) error {
-	return ka.consumer.Run(ctx, func(_ context.Context, data []byte) error {
+func (kc KafkaController) Run(ctx context.Context) error {
+	return kc.consumer.Run(ctx, func(_ context.Context, data []byte) error {
 		var task kafkaClient.RepoTaskResponse
 
 		err := json.Unmarshal(data, &task)
@@ -43,11 +35,11 @@ func (ka KafkaAdapter) RunGetTaskResponse(ctx context.Context, handle func(ctx c
 			return apperror.Wrap("unmarshal kafka task", err)
 		}
 
-		log.Printf("get task for proceed for %v/%v", task.Owner, task.Repo)
+		log.Printf("get task for proceed: %v/%v", task.Owner, task.Repo)
 
 		switch task.Status {
 		case kafkaClient.STATUS_OK:
-			return handle(ctx, domain.TaskResponse{
+			return kc.tasker.ProcessTaskReponse(domain.TaskResponse{
 				Owner:       task.Owner,
 				Repo:        task.Repo,
 				Description: task.Description,
