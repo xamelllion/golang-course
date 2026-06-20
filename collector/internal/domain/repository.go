@@ -4,12 +4,12 @@ import "time"
 
 type Subscription struct {
 	Owner string
-	Repo string
+	Repo  string
 }
 
 type Task struct {
 	Owner string
-	Repo string
+	Repo  string
 }
 
 type GithubRepository struct {

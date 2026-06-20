@@ -3,11 +3,11 @@ package config
 import "os"
 
 type Config struct {
-	Port          string
-	CollectorAddr string
+	Port           string
+	CollectorAddr  string
 	SubscriberAddr string
-	KafkaBroker  string
-	DB_DSN        string
+	KafkaBroker    string
+	DB_DSN         string
 }
 
 func Load() Config {

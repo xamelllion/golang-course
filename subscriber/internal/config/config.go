@@ -4,8 +4,8 @@ import "os"
 
 type Config struct {
 	GithubToken string
-	Port   string
-	DB_DSN string
+	Port        string
+	DB_DSN      string
 }
 
 func Load() Config {
