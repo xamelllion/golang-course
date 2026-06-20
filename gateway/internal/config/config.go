@@ -7,6 +7,7 @@ type Config struct {
 	ProcessorAddr  string
 	CollectorAddr  string
 	SubscriberAddr string
+	RedisAddr      string
 }
 
 func Load() Config {
@@ -16,6 +17,7 @@ func Load() Config {
 	config.ProcessorAddr = getenv("PROCESSOR_ADDR", "localhost:50051")
 	config.CollectorAddr = getenv("COLLECTOR_ADDR", "localhost:50052")
 	config.SubscriberAddr = getenv("SUBSCRIBER_ADDR", "localhost:50053")
+	config.RedisAddr = getenv("REDIS_ADDR", "localhost:6379")
 
 	return config
 }
