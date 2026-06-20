@@ -5,6 +5,7 @@ import (
 
 	"github.com/xamelllion/golang-course/collector/internal/domain"
 	apperror "github.com/xamelllion/golang-course/internal/errors"
+	kafkaClient "github.com/xamelllion/golang-course/internal/kafka"
 )
 
 type GithubAdapter interface {
@@ -31,13 +32,13 @@ func (tu TaskerUsecase) ProcessTask(task domain.Task) error {
 		log.Printf("process task error %v", err)
 		switch apperror.CodeOf(err) {
 		case apperror.CodeNotFound:
-			return tu.ka.SendTaskResponseError(task, "not_found", err)
+			return tu.ka.SendTaskResponseError(task, kafkaClient.STATUS_NOT_FOUND, err)
 		case apperror.CodeInvalidArgument:
-			return tu.ka.SendTaskResponseError(task, "invalid_argument", err)
+			return tu.ka.SendTaskResponseError(task, kafkaClient.STATUS_INVALID_ARGUMENT, err)
 		case apperror.CodeUnavailable:
-			return tu.ka.SendTaskResponseError(task, "unavailable", err)
+			return tu.ka.SendTaskResponseError(task, kafkaClient.STATUS_UNAVAILABLE, err)
 		default:
-			return tu.ka.SendTaskResponseError(task, "internal", err)
+			return tu.ka.SendTaskResponseError(task, kafkaClient.STATUS_INTERNAL, err)
 		}
 	}
 

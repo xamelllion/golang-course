@@ -7,6 +7,14 @@ type RepoTaskRequest struct {
 	Repo  string `json:"repo"`
 }
 
+const (
+	STATUS_OK               = "ok"
+	STATUS_NOT_FOUND        = "not_found"
+	STATUS_INVALID_ARGUMENT = "invalid_argument"
+	STATUS_UNAVAILABLE      = "unavailable"
+	STATUS_INTERNAL         = "internal"
+)
+
 type RepoTaskResponse struct {
 	Owner       string    `json:"owner"`
 	Repo        string    `json:"repo"`

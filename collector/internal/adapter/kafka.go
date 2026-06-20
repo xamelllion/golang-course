@@ -41,7 +41,7 @@ func (ka KafkaAdapter) SendTaskResponse(task domain.Task, repo domain.GithubRepo
 		Stars:       int(repo.Stars),
 		Forks:       int(repo.Forks),
 		CreatedAt:   repo.Create_date,
-		Status:      "ok",
+		Status:      kafkaClient.STATUS_OK,
 		Error:       "",
 	}
 
