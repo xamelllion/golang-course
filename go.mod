@@ -25,6 +25,7 @@ require (
 	github.com/mailru/easyjson v0.9.2 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/segmentio/kafka-go v0.4.51 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/http-swagger v1.3.4 // indirect
 	github.com/swaggo/swag v1.16.6 // indirect

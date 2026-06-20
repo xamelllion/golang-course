@@ -54,17 +54,17 @@ services:
             dockerfile: Dockerfile.subscriber
         environment:
             SUBSCRIBER_PORT: "50053"
-            DB_DSN: "postgres://postgres:postgres@postgres:5432/subscribers?sslmode=disable"
+            DB_DSN: "postgres://postgres:postgres@postgres-subscriber:5432/subscribers?sslmode=disable"
         image: subscriber
         ports:
             - "50053:50053"
         depends_on:
-            postgres:
-                condition: service_healthy
+            migrate-subscribe:
+                condition: service_completed_successfully
 
-    postgres:
+    postgres-subscriber:
         image: postgres:17-alpine
-        container_name: postgres
+        container_name: postgres-subscriber
         environment:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
@@ -79,19 +79,20 @@ services:
             timeout: 3s
             retries: 5
 
-    migrate:
+    migrate-subscribe:
         image: migrate/migrate:v4.19.1
+        container_name: migrate-subscribe
         depends_on:
-            postgres:
+            postgres-subscriber:
                 condition: service_healthy
         volumes:
-            - ./migrations:/migrations:ro,Z
+            - ./subscriber/internal/adapter/postgres/migrations:/migrations:ro,Z
         command:
             [
                 "-path",
                 "/migrations",
                 "-database",
-                "postgres://postgres:postgres@postgres:5432/subscribers?sslmode=disable",
+                "postgres://postgres:postgres@postgres-subscriber:5432/subscribers?sslmode=disable",
                 "up",
             ]
 
