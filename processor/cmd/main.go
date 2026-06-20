@@ -24,7 +24,7 @@ func main() {
 		panic(err)
 	}
 
-	conn, err := grpc.NewClient(cfg.CollectorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(cfg.SubscriberAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		panic(err)
 	}
@@ -36,14 +36,14 @@ func main() {
 	}
 	defer pool.Close()
 
-	// collector := adapter.NewCollector(conn)
+	subscriber := adapter.NewSubscriber(conn)
 	postgres := adapter.NewPostgresAdapter(pool)
 
 	kafkaRequestProducer := kafkaClient.NewKafkaProducer([]string{cfg.KafkaBroker}, "repo.tasks.request")
 	kafkaResponseConsumer := kafkaClient.NewKafkaReader([]string{cfg.KafkaBroker}, "repo.tasks.response", "processor")
 	kafka := adapter.NewKafkaAdapter(kafkaRequestProducer, kafkaResponseConsumer)
 
-	repositoryUsecase := usecase.NewRepositoryUsecase(postgres, kafka)
+	repositoryUsecase := usecase.NewRepositoryUsecase(postgres, kafka, subscriber)
 	pingUsecase := usecase.NewPingUsecase()
 	server := controller.NewServer(repositoryUsecase, pingUsecase)
 

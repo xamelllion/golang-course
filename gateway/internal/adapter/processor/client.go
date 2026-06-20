@@ -65,7 +65,7 @@ func (p Processor) GetRepository(owner, repoName string) (*domain.Repository, er
 			CreateDate:  repo.CreateDate.AsTime(),
 		}, nil
 	case pbProcessor.RepositoryStatus_REPOSITORY_STATUS_NOT_FOUND:
-		return nil, apperror.New(apperror.CodeNotFound, error.Error())
+		return nil, apperror.New(apperror.CodeNotFound, "repo not found")
 	case pbProcessor.RepositoryStatus_REPOSITORY_STATUS_PREPARING:
 		return nil, nil
 	default:

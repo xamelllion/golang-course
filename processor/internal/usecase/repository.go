@@ -17,13 +17,18 @@ type Tasker interface {
 	SendTaskRequest(owner, repo string) error
 }
 
+type Subscriber interface {
+	GetSubscriptions() ([]domain.Subscription, error)
+}
+
 type RepositoryUseCase struct {
 	repoKeeper RepoKeeper
 	tasker     Tasker
+	subscriber Subscriber
 }
 
-func NewRepositoryUsecase(repoKeeper RepoKeeper, tasker Tasker) *RepositoryUseCase {
-	return &RepositoryUseCase{repoKeeper: repoKeeper, tasker: tasker}
+func NewRepositoryUsecase(repoKeeper RepoKeeper, tasker Tasker, subscriber Subscriber) *RepositoryUseCase {
+	return &RepositoryUseCase{repoKeeper: repoKeeper, tasker: tasker, subscriber: subscriber}
 }
 
 func (r *RepositoryUseCase) GetRepository(owner, repoName string) (*domain.Repository, error) {
@@ -51,7 +56,24 @@ func (r *RepositoryUseCase) GetRepository(owner, repoName string) (*domain.Repos
 }
 
 func (r *RepositoryUseCase) GetSubscribedRepository() ([](*domain.Repository), error) {
-	// TODO
-	return nil, nil
-	// return r.Collector.GetSubscribedRepository()
+	subs, err := r.subscriber.GetSubscriptions()
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*domain.Repository{}
+	for _, sub := range subs {
+		repo, err := r.GetRepository(sub.Owner, sub.Repo)
+		if err != nil {
+			return nil, err
+		}
+
+		if repo == nil {
+			continue
+		}
+
+		result = append(result, repo)
+	}
+
+	return result, nil
 }

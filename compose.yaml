@@ -37,6 +37,7 @@ services:
             dockerfile: Dockerfile.processor
         environment:
             COLLECTOR_ADDR: "collector:50052"
+            SUBSCRIBER_ADDR: "subscriber:50053"
             PROCESSOR_PORT: "50051"
             KAFKA_BROKER: "kafka:9092"
             DB_DSN: "postgres://postgres:postgres@postgres-processor:5432/repositories?sslmode=disable"
