@@ -15,6 +15,15 @@ services:
             kafka-init:
                 condition: service_completed_successfully
 
+    redis:
+        image: redis:7-alpine
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
+
     gateway:
         build:
             context: .
@@ -31,6 +40,7 @@ services:
             - processor
             - collector
             - subscriber
+            - redis
 
     processor:
         build:

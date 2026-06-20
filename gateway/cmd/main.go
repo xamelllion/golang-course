@@ -48,8 +48,8 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/docs/swagger/", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://localhost:%s/docs/swagger/doc.json", cfg.Port))))
-	mux.HandleFunc("/api/repositories/info", handler.GetRepository)
-	mux.HandleFunc("/api/ping", handler.PingServices)
+	mux.HandleFunc("GET /api/repositories/info", handler.GetRepository)
+	mux.HandleFunc("GET /api/ping", handler.PingServices)
 	mux.HandleFunc("POST /api/subscriptions", handler.Subscribe)
 	mux.HandleFunc("DELETE /api/subscriptions/{owner}/{repo}", handler.Unsubscribe)
 	mux.HandleFunc("GET /api/subscriptions", handler.GetSubscriptions)
