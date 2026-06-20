@@ -35,7 +35,7 @@ func (kc KafkaController) Run() error {
 			return apperror.Wrap("unmarshal kafka task", err)
 		}
 
-		log.Printf("get task for proceed: %v", task)
+		log.Printf("get task for proceed for %v/%v", task.Owner, task.Repo)
 
 		return kc.tasker.ProcessTask(domain.Task{
 			Owner: task.Owner,

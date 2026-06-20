@@ -28,7 +28,7 @@ func (ka KafkaAdapter) SendTaskRequest(sub domain.Subscription) error {
 	if err != nil {
 		return apperror.WrapCode(apperror.CodeInternal, "send kafka task requests", err)
 	}
-	log.Printf("sended task request %v", req)
+	log.Printf("sended task request for %v/%v", req.Owner, req.Repo)
 
 	return nil
 }
@@ -45,14 +45,12 @@ func (ka KafkaAdapter) SendTaskResponse(task domain.Task, repo domain.GithubRepo
 		Error:       "",
 	}
 
-	log.Printf("start send kafka response %v", res)
-
 	err := ka.producer.Send(context.Background(), "repo_response", res)
 	if err != nil {
 		return apperror.WrapCode(apperror.CodeInternal, "send kafka task response", err)
 	}
 
-	log.Printf("send kafka response %v", res)
+	log.Printf("sended kafka response for %v/%v", res.Owner, res.Repo)
 
 	return nil
 }
@@ -68,6 +66,8 @@ func (ka KafkaAdapter) SendTaskResponseError(task domain.Task, status string, er
 	if err := ka.producer.Send(context.Background(), "repo_response", res); err != nil {
 		return apperror.WrapCode(apperror.CodeInternal, "send kafka task response", err)
 	}
+
+	log.Printf("sended kafka response error for %v/%v (%s)", res.Owner, res.Repo, res.Status)
 
 	return nil
 }

@@ -42,7 +42,7 @@ func (ka KafkaAdapter) RunGetTaskResponse(ctx context.Context, handle func(ctx c
 			return apperror.Wrap("unmarshal kafka task", err)
 		}
 
-		log.Printf("get task for proceed: %v", task)
+		log.Printf("get task for proceed for %v/%v", task.Owner, task.Repo)
 
 		return handle(ctx, task)
 	})

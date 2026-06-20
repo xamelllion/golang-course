@@ -42,7 +42,7 @@ func (tu TaskerUsecase) ProcessTask(task domain.Task) error {
 		}
 	}
 
-	log.Printf("get repo for kafka task: %v", repo)
+	log.Printf("get repo for kafka task for %v/%v", task.Owner, task.Repo)
 
 	return tu.ka.SendTaskResponse(task, repo)
 }

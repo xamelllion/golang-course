@@ -2,6 +2,7 @@ package adapter
 
 import (
 	"context"
+	"log"
 
 	apperror "github.com/xamelllion/golang-course/internal/errors"
 	processor "github.com/xamelllion/golang-course/processor/internal/adapter/postgres/sqlc"
@@ -85,6 +86,8 @@ func (a PostgresAdapter) CreateRepo(ctx context.Context, repo domain.Repository,
 		return apperror.Wrap("create repo postgres", err)
 	}
 
+	log.Printf("postgres: create repo %v/%v", owner, repoName)
+
 	return nil
 }
 
@@ -101,6 +104,8 @@ func (a PostgresAdapter) UpdateRepo(ctx context.Context, repo domain.Repository,
 	if err != nil {
 		return apperror.Wrap("update repo postgres", err)
 	}
+
+	log.Printf("postgres: update repo %v/%v", owner, repoName)
 
 	return nil
 }
