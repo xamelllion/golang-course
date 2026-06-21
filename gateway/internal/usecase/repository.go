@@ -21,11 +21,9 @@ func NewRepositoryUseCase(processor Processor, log *slog.Logger) *RepositoryUseC
 }
 
 func (r *RepositoryUseCase) GetRepository(owner, repo string) (*domain.Repository, error) {
-	r.log.Debug("usecase: get repository", "owner", owner, "repo", repo)
 	return r.Processor.GetRepository(owner, repo)
 }
 
 func (r *RepositoryUseCase) GetSubscribedRepository() ([](*domain.Repository), error) {
-	r.log.Debug("usecase: get subscribed repositories")
 	return r.Processor.GetSubscribedRepository()
 }

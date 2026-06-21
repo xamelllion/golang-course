@@ -120,8 +120,6 @@ func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.log.Debug("http: get request", "owner", owner, "repo", repo)
-
 	repository, error := h.RepositoryUseCase.GetRepository(owner, repo)
 	if error != nil {
 		h.log.Debug("http: error", "error", error)
@@ -168,7 +166,6 @@ func (h *Handler) PingServices(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusMethodNotAllowed, "wrong method")
 		return
 	}
-	h.log.Debug("http: ping request")
 
 	servicesInfo, err := h.PingUseCase.PingAll()
 	if err != nil {
