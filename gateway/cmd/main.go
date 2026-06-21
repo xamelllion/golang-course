@@ -5,11 +5,14 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-redis/redis"
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/collector"
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/processor"
+	"github.com/xamelllion/golang-course/gateway/internal/adapter/ratelimiter"
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/subscriber"
 	"github.com/xamelllion/golang-course/gateway/internal/config"
 	controller "github.com/xamelllion/golang-course/gateway/internal/controller/http"
+	"github.com/xamelllion/golang-course/gateway/internal/middleware"
 	"github.com/xamelllion/golang-course/gateway/internal/usecase"
 	"github.com/xamelllion/golang-course/internal/logger"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -44,16 +47,26 @@ func main() {
 	}, logger)
 	subscribeUseCase := usecase.NewSubscribeUseCase(subscriber, logger)
 
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: cfg.RedisAddr,
+	})
+
+	redisRateLimiter := ratelimiter.NewRedisRateLimiter(redisClient, float64(cfg.RateLimitReqPerSecond), cfg.RateLimitCapaciry)
+	memoryRateLimiter := ratelimiter.NewMemoryBucketRateLimiter(cfg.RateLimitCapaciry, cfg.RateLimitReqPerSecond)
+	ratelimiter := ratelimiter.NewFallbackRateLimiter(redisRateLimiter, memoryRateLimiter)
+	rateLimitMiddleware := middleware.RateLimitMiddleware(ratelimiter)
+
 	handler := controller.NewHandler(repositoryUseCase, pingUseCase, subscribeUseCase, logger)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/docs/swagger/", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://localhost:%s/docs/swagger/doc.json", cfg.Port))))
-	mux.HandleFunc("GET /api/repositories/info", handler.GetRepository)
-	mux.HandleFunc("GET /api/ping", handler.PingServices)
-	mux.HandleFunc("POST /api/subscriptions", handler.Subscribe)
-	mux.HandleFunc("DELETE /api/subscriptions/{owner}/{repo}", handler.Unsubscribe)
-	mux.HandleFunc("GET /api/subscriptions", handler.GetSubscriptions)
-	mux.HandleFunc("GET /api/subscriptions/info", handler.GetSubscribedRepositories)
+	swaggerHandleFunc := httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://localhost:%s/docs/swagger/doc.json", cfg.Port)))
+	mux.Handle("/docs/swagger/", rateLimitMiddleware(http.HandlerFunc(swaggerHandleFunc)))
+	mux.Handle("GET /api/repositories/info", rateLimitMiddleware(http.HandlerFunc(handler.GetRepository)))
+	mux.Handle("GET /api/ping", rateLimitMiddleware(http.HandlerFunc(handler.PingServices)))
+	mux.Handle("POST /api/subscriptions", rateLimitMiddleware(http.HandlerFunc(handler.Subscribe)))
+	mux.Handle("DELETE /api/subscriptions/{owner}/{repo}", rateLimitMiddleware(http.HandlerFunc(handler.Unsubscribe)))
+	mux.Handle("GET /api/subscriptions", rateLimitMiddleware(http.HandlerFunc(handler.GetSubscriptions)))
+	mux.Handle("GET /api/subscriptions/info", rateLimitMiddleware(http.HandlerFunc(handler.GetSubscribedRepositories)))
 
 	log.Printf("run server on %s port\n", cfg.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), mux))

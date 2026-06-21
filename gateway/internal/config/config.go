@@ -1,13 +1,19 @@
 package config
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"strconv"
+)
 
 type Config struct {
-	Port           string
-	ProcessorAddr  string
-	CollectorAddr  string
-	SubscriberAddr string
-	RedisAddr      string
+	Port                  string
+	ProcessorAddr         string
+	CollectorAddr         string
+	SubscriberAddr        string
+	RedisAddr             string
+	RateLimitCapaciry     int
+	RateLimitReqPerSecond float64
 }
 
 func Load() Config {
@@ -18,6 +24,18 @@ func Load() Config {
 	config.CollectorAddr = getenv("COLLECTOR_ADDR", "localhost:50052")
 	config.SubscriberAddr = getenv("SUBSCRIBER_ADDR", "localhost:50053")
 	config.RedisAddr = getenv("REDIS_ADDR", "localhost:6379")
+
+	capacity, err := strconv.Atoi(getenv("RATELIMIT_CAPACIRY", "10"))
+	if err != nil {
+		panic(fmt.Sprintf("wrong value type %v", err))
+	}
+	reqPerSec, err := strconv.ParseFloat(getenv("RATELIMIT_REQ_PER_SECOND", "5.0"), 64)
+	if err != nil {
+		panic(fmt.Sprintf("wrong value type %v", err))
+	}
+
+	config.RateLimitCapaciry = capacity
+	config.RateLimitReqPerSecond = reqPerSec
 
 	return config
 }

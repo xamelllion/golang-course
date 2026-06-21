@@ -53,7 +53,7 @@ return {allowed, tokens}
 `
 
 type RedisBucketRateLimiter struct {
-	client         redis.Client
+	client         *redis.Client
 	capacity       int
 	refillRate     float64
 	refillInterval time.Duration
@@ -61,14 +61,14 @@ type RedisBucketRateLimiter struct {
 	scriptLoaded   bool
 }
 
-func NewRedisRateLimiter(client redis.Client, reqPerSecond float64) RedisBucketRateLimiter {
+func NewRedisRateLimiter(client *redis.Client, reqPerSecond float64, capacity int) RedisBucketRateLimiter {
 	h := sha1.New()
 	h.Write([]byte(tokenBucketScript))
 	sha := fmt.Sprintf("%x", h.Sum(nil))
 
 	return RedisBucketRateLimiter{
 		client:         client,
-		capacity:       10,
+		capacity:       capacity,
 		refillRate:     1.0,
 		refillInterval: time.Duration(1000.0/reqPerSecond) * time.Millisecond,
 		scriptSHA:      sha,
@@ -87,11 +87,13 @@ func (rl RedisBucketRateLimiter) ensureScriptLoaded(ctx context.Context) {
 }
 
 func (rl RedisBucketRateLimiter) Allow(ctx context.Context, key string) (bool, error) {
+	key = "rl:ip:" + key
+
 	rl.ensureScriptLoaded(ctx)
 
 	now := float64(time.Now().UnixMicro()) / 1e6
 
-	args := []interface{}{
+	args := []any{
 		rl.capacity,
 		rl.refillRate,
 		rl.refillInterval,
