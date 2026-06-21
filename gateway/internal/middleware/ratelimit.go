@@ -8,8 +8,6 @@ import (
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/ratelimiter"
 )
 
-type Middleware func(next http.Handler) http.Handler
-
 func RateLimitMiddleware(ratelimiter ratelimiter.RateLimiter) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

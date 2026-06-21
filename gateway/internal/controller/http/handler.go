@@ -70,83 +70,85 @@ func writeJSONError(w http.ResponseWriter, status int, message string) {
 //	@Failure		502		{object}	controller.GetRepository.HTTPError
 //	@Failure		500		{object}	controller.GetRepository.HTTPError
 //	@Router			/api/repositories/info [get]
-func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
-	type HTTPError struct {
-		Err string `json:"error" example:"some error"`
-	}
-
-	if r.Method != http.MethodGet {
-		writeJSONError(w, http.StatusMethodNotAllowed, "wrong method")
-		return
-	}
-
-	githubURLstring := r.URL.Query().Get("url")
-	if githubURLstring == "" {
-		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
-		return
-	}
-
-	githubURL, err := url.Parse(githubURLstring)
-	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
-		return
-	}
-
-	if githubURL.Host != "github.com" {
-		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
-		return
-	}
-
-	if githubURL.Path == "" {
-		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
-		return
-	}
-
-	if githubURL.Path[0] == '/' {
-		githubURL.Path = githubURL.Path[1:]
-	}
-
-	params := strings.Split(githubURL.Path, "/")
-	if len(params) < 2 {
-		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
-		return
-	}
-
-	owner := params[0]
-	repo := params[1]
-
-	if owner == "" || repo == "" {
-		writeJSONError(w, http.StatusBadRequest, "invalid repository path")
-		return
-	}
-
-	repository, error := h.RepositoryUseCase.GetRepository(owner, repo)
-	if error != nil {
-		h.log.Debug("http: error", "error", error)
-		switch apperror.CodeOf(error) {
-		case apperror.CodeNotFound:
-			writeJSONError(w, http.StatusNotFound, "not found")
-		case apperror.CodeInvalidArgument:
-			writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
-		case apperror.CodeUnavailable:
-			writeJSONError(w, http.StatusBadGateway, "unavailable github service")
-		default:
-			fmt.Fprintf(os.Stderr, "internal error: %v\n", error)
-			writeJSONError(w, http.StatusInternalServerError, "internal error")
+func (h *Handler) GetRepository() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		type HTTPError struct {
+			Err string `json:"error" example:"some error"`
 		}
 
-		return
-	}
+		if r.Method != http.MethodGet {
+			writeJSONError(w, http.StatusMethodNotAllowed, "wrong method")
+			return
+		}
 
-	if repository == nil {
+		githubURLstring := r.URL.Query().Get("url")
+		if githubURLstring == "" {
+			writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+			return
+		}
+
+		githubURL, err := url.Parse(githubURLstring)
+		if err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+			return
+		}
+
+		if githubURL.Host != "github.com" {
+			writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+			return
+		}
+
+		if githubURL.Path == "" {
+			writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+			return
+		}
+
+		if githubURL.Path[0] == '/' {
+			githubURL.Path = githubURL.Path[1:]
+		}
+
+		params := strings.Split(githubURL.Path, "/")
+		if len(params) < 2 {
+			writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+			return
+		}
+
+		owner := params[0]
+		repo := params[1]
+
+		if owner == "" || repo == "" {
+			writeJSONError(w, http.StatusBadRequest, "invalid repository path")
+			return
+		}
+
+		repository, error := h.RepositoryUseCase.GetRepository(owner, repo)
+		if error != nil {
+			h.log.Debug("http: error", "error", error)
+			switch apperror.CodeOf(error) {
+			case apperror.CodeNotFound:
+				writeJSONError(w, http.StatusNotFound, "not found")
+			case apperror.CodeInvalidArgument:
+				writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
+			case apperror.CodeUnavailable:
+				writeJSONError(w, http.StatusBadGateway, "unavailable github service")
+			default:
+				fmt.Fprintf(os.Stderr, "internal error: %v\n", error)
+				writeJSONError(w, http.StatusInternalServerError, "internal error")
+			}
+
+			return
+		}
+
+		if repository == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusAccepted)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusAccepted)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(repository)
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(repository)
+	})
 }
 
 // PingServices godoc
@@ -161,27 +163,29 @@ func (h *Handler) GetRepository(w http.ResponseWriter, r *http.Request) {
 //	@Failure		503		{object}	domain.ServicesInfo
 //	@Failure		500		{object}	controller.GetRepository.HTTPError
 //	@Router			/api/ping [get]
-func (h *Handler) PingServices(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		writeJSONError(w, http.StatusMethodNotAllowed, "wrong method")
-		return
-	}
+func (h *Handler) PingServices() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			writeJSONError(w, http.StatusMethodNotAllowed, "wrong method")
+			return
+		}
 
-	servicesInfo, err := h.PingUseCase.PingAll()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
-		writeJSONError(w, http.StatusInternalServerError, "internal error")
-		return
-	}
+		servicesInfo, err := h.PingUseCase.PingAll()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
+			writeJSONError(w, http.StatusInternalServerError, "internal error")
+			return
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	if servicesInfo.Status == domain.ServicesStatusOk {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		w.WriteHeader(http.StatusServiceUnavailable)
-	}
+		w.Header().Set("Content-Type", "application/json")
+		if servicesInfo.Status == domain.ServicesStatusOk {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		}
 
-	_ = json.NewEncoder(w).Encode(servicesInfo)
+		_ = json.NewEncoder(w).Encode(servicesInfo)
+	})
 }
 
 type SubscribeRequest struct {
@@ -205,45 +209,47 @@ type SubscribeRequest struct {
 //	@Failure		500	{object}	controller.GetRepository.HTTPError
 //	@Failure		502	{object}	controller.GetRepository.HTTPError
 //	@Router			/api/subscriptions [post]
-func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
-	if r.Body == nil {
-		writeJSONError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-	defer r.Body.Close()
+func (h *Handler) Subscribe() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Body == nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid request body")
+			return
+		}
+		defer r.Body.Close()
 
-	var subReq SubscribeRequest
+		var subReq SubscribeRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&subReq); err != nil {
-		writeJSONError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-
-	if subReq.Owner == "" || subReq.Repo == "" {
-		writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
-		return
-	}
-
-	if err := h.SubscribeUseCase.Subscribe(subReq.Owner, subReq.Repo); err != nil {
-		h.log.Debug("http: error", "error", err)
-		switch apperror.CodeOf(err) {
-		case apperror.CodeNotFound:
-			writeJSONError(w, http.StatusNotFound, "not found")
-		case apperror.CodeInvalidArgument:
-			writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
-		case apperror.CodeUnavailable:
-			writeJSONError(w, http.StatusBadGateway, "unavailable github service")
-		case apperror.CodeDublicate:
-			writeJSONError(w, http.StatusConflict, "already subscribed")
-		default:
-			fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
-			writeJSONError(w, http.StatusInternalServerError, "internal error")
+		if err := json.NewDecoder(r.Body).Decode(&subReq); err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid request body")
+			return
 		}
 
-		return
-	}
+		if subReq.Owner == "" || subReq.Repo == "" {
+			writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
+			return
+		}
 
-	w.WriteHeader(http.StatusOK)
+		if err := h.SubscribeUseCase.Subscribe(subReq.Owner, subReq.Repo); err != nil {
+			h.log.Debug("http: error", "error", err)
+			switch apperror.CodeOf(err) {
+			case apperror.CodeNotFound:
+				writeJSONError(w, http.StatusNotFound, "not found")
+			case apperror.CodeInvalidArgument:
+				writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
+			case apperror.CodeUnavailable:
+				writeJSONError(w, http.StatusBadGateway, "unavailable github service")
+			case apperror.CodeDublicate:
+				writeJSONError(w, http.StatusConflict, "already subscribed")
+			default:
+				fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
+				writeJSONError(w, http.StatusInternalServerError, "internal error")
+			}
+
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	})
 }
 
 // Unsubscribe godoc
@@ -261,35 +267,37 @@ func (h *Handler) Subscribe(w http.ResponseWriter, r *http.Request) {
 //	@Failure		500	{object}	controller.GetRepository.HTTPError
 //	@Failure		502	{object}	controller.GetRepository.HTTPError
 //	@Router			/api/subscriptions/{owner}/{repo} [delete]
-func (h *Handler) Unsubscribe(w http.ResponseWriter, r *http.Request) {
-	owner := r.PathValue("owner")
-	repo := r.PathValue("repo")
+func (h *Handler) Unsubscribe() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		owner := r.PathValue("owner")
+		repo := r.PathValue("repo")
 
-	if owner == "" || repo == "" {
-		writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
-		return
-	}
-
-	if err := h.SubscribeUseCase.Unsubscribe(owner, repo); err != nil {
-		h.log.Debug("http: error", "error", err)
-		switch apperror.CodeOf(err) {
-		case apperror.CodeNotFound:
-			writeJSONError(w, http.StatusNotFound, "not found")
-		case apperror.CodeInvalidArgument:
+		if owner == "" || repo == "" {
 			writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
-		case apperror.CodeUnavailable:
-			writeJSONError(w, http.StatusBadGateway, "unavailable github service")
-		case apperror.CodeDublicate:
-			writeJSONError(w, http.StatusConflict, "already subscribed")
-		default:
-			fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
-			writeJSONError(w, http.StatusInternalServerError, "internal error")
+			return
 		}
 
-		return
-	}
+		if err := h.SubscribeUseCase.Unsubscribe(owner, repo); err != nil {
+			h.log.Debug("http: error", "error", err)
+			switch apperror.CodeOf(err) {
+			case apperror.CodeNotFound:
+				writeJSONError(w, http.StatusNotFound, "not found")
+			case apperror.CodeInvalidArgument:
+				writeJSONError(w, http.StatusBadRequest, "invalid owner or repo")
+			case apperror.CodeUnavailable:
+				writeJSONError(w, http.StatusBadGateway, "unavailable github service")
+			case apperror.CodeDublicate:
+				writeJSONError(w, http.StatusConflict, "already subscribed")
+			default:
+				fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
+				writeJSONError(w, http.StatusInternalServerError, "internal error")
+			}
 
-	w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	})
 }
 
 // GetSubscriptions godoc
@@ -302,17 +310,19 @@ func (h *Handler) Unsubscribe(w http.ResponseWriter, r *http.Request) {
 //	@Success		200	{array}		domain.Subscription
 //	@Failure		500	{object}	controller.GetRepository.HTTPError
 //	@Router			/api/subscriptions [get]
-func (h *Handler) GetSubscriptions(w http.ResponseWriter, r *http.Request) {
-	subs, err := h.SubscribeUseCase.GetSubscriptions()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
-		writeJSONError(w, http.StatusInternalServerError, "internal error")
-		return
-	}
+func (h *Handler) GetSubscriptions() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		subs, err := h.SubscribeUseCase.GetSubscriptions()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
+			writeJSONError(w, http.StatusInternalServerError, "internal error")
+			return
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(subs)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(subs)
+	})
 }
 
 // GetSubscribedRepositories godoc
@@ -326,28 +336,31 @@ func (h *Handler) GetSubscriptions(w http.ResponseWriter, r *http.Request) {
 //	@Failure		500	{object}	controller.GetRepository.HTTPError
 //	@Failure		502	{object}	controller.GetRepository.HTTPError
 //	@Router			/api/subscriptions/info [get]
-func (h *Handler) GetSubscribedRepositories(w http.ResponseWriter, r *http.Request) {
-	repos, err := h.RepositoryUseCase.GetSubscribedRepository()
-	if err != nil {
-		switch apperror.CodeOf(err) {
-		case apperror.CodeUnavailable:
-			writeJSONError(w, http.StatusBadGateway, "unavailable github service")
-		default:
-			fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
-			writeJSONError(w, http.StatusInternalServerError, "internal error")
+func (h *Handler) GetSubscribedRepositories() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		repos, err := h.RepositoryUseCase.GetSubscribedRepository()
+		if err != nil {
+			switch apperror.CodeOf(err) {
+			case apperror.CodeUnavailable:
+				writeJSONError(w, http.StatusBadGateway, "unavailable github service")
+			default:
+				fmt.Fprintf(os.Stderr, "internal error: %v\n", err)
+				writeJSONError(w, http.StatusInternalServerError, "internal error")
+			}
+
+			return
 		}
 
-		return
-	}
-
-	reposFiltered := []domain.Repository{}
-	for _, repo := range repos {
-		if repo != nil {
-			reposFiltered = append(reposFiltered, *repo)
+		reposFiltered := []domain.Repository{}
+		for _, repo := range repos {
+			if repo != nil {
+				reposFiltered = append(reposFiltered, *repo)
+			}
 		}
-	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(reposFiltered)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(reposFiltered)
+
+	})
 }
