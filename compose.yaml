@@ -36,6 +36,7 @@ services:
             REDIS_ADDR: "redis:6379"
             RATELIMIT_CAPACIRY: 10
             RATELIMIT_REQ_PER_SECOND: 5.0
+            CACHE_TTL_SECONDS: 60
         image: gateway
         ports:
             - "8080:8080"

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-redis/redis"
+	"github.com/xamelllion/golang-course/gateway/internal/adapter/cache"
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/collector"
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/processor"
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/ratelimiter"
@@ -56,17 +57,20 @@ func main() {
 	ratelimiter := ratelimiter.NewFallbackRateLimiter(redisRateLimiter, memoryRateLimiter)
 	rateLimitMiddleware := middleware.RateLimitMiddleware(ratelimiter)
 
+	cacher := cache.NewRedisCacher(redisClient)
+	cacherMiddleware := middleware.CacheMiddleware(cacher, cfg.CacheTTL)
+
 	handler := controller.NewHandler(repositoryUseCase, pingUseCase, subscribeUseCase, logger)
 
 	mux := http.NewServeMux()
 	swaggerHandleFunc := httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("http://localhost:%s/docs/swagger/doc.json", cfg.Port)))
 	mux.Handle("/docs/swagger/", rateLimitMiddleware(http.HandlerFunc(swaggerHandleFunc)))
-	mux.Handle("GET /api/repositories/info", rateLimitMiddleware(http.HandlerFunc(handler.GetRepository)))
+	mux.Handle("GET /api/repositories/info", rateLimitMiddleware(cacherMiddleware(http.HandlerFunc(handler.GetRepository))))
 	mux.Handle("GET /api/ping", rateLimitMiddleware(http.HandlerFunc(handler.PingServices)))
 	mux.Handle("POST /api/subscriptions", rateLimitMiddleware(http.HandlerFunc(handler.Subscribe)))
 	mux.Handle("DELETE /api/subscriptions/{owner}/{repo}", rateLimitMiddleware(http.HandlerFunc(handler.Unsubscribe)))
 	mux.Handle("GET /api/subscriptions", rateLimitMiddleware(http.HandlerFunc(handler.GetSubscriptions)))
-	mux.Handle("GET /api/subscriptions/info", rateLimitMiddleware(http.HandlerFunc(handler.GetSubscribedRepositories)))
+	mux.Handle("GET /api/subscriptions/info", rateLimitMiddleware(cacherMiddleware(http.HandlerFunc(handler.GetSubscribedRepositories))))
 
 	log.Printf("run server on %s port\n", cfg.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), mux))
