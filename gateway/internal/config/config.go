@@ -13,7 +13,7 @@ type Config struct {
 	CollectorAddr         string
 	SubscriberAddr        string
 	RedisAddr             string
-	RateLimitCapaciry     int
+	RateLimitCapacity     int
 	RateLimitReqPerSecond float64
 	CacheTTL              time.Duration
 }
@@ -27,7 +27,7 @@ func Load() Config {
 	config.SubscriberAddr = getenv("SUBSCRIBER_ADDR", "localhost:50053")
 	config.RedisAddr = getenv("REDIS_ADDR", "localhost:6379")
 
-	config.RateLimitCapaciry = getenvInt("RATELIMIT_CAPACIRY", 10)
+	config.RateLimitCapacity = getenvInt("RATELIMIT_CAPACITY", 10)
 	config.RateLimitReqPerSecond = getenvFloat64("RATELIMIT_REQ_PER_SECOND", 5.0)
 	config.CacheTTL = time.Duration(getenvInt("CACHE_TTL_SECONDS", 60)) * time.Second
 

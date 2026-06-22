@@ -34,7 +34,7 @@ services:
             SUBSCRIBER_ADDR: "subscriber:50053"
             GATEWAY_PORT: "8080"
             REDIS_ADDR: "redis:6379"
-            RATELIMIT_CAPACIRY: 10
+            RATELIMIT_CAPACITY: 10
             RATELIMIT_REQ_PER_SECOND: 5.0
             CACHE_TTL_SECONDS: 60
         image: gateway

@@ -52,8 +52,8 @@ func main() {
 		Addr: cfg.RedisAddr,
 	})
 
-	redisRateLimiter := ratelimiter.NewRedisRateLimiter(redisClient, float64(cfg.RateLimitReqPerSecond), cfg.RateLimitCapaciry)
-	memoryRateLimiter := ratelimiter.NewMemoryBucketRateLimiter(cfg.RateLimitCapaciry, cfg.RateLimitReqPerSecond)
+	redisRateLimiter := ratelimiter.NewRedisRateLimiter(redisClient, float64(cfg.RateLimitReqPerSecond), cfg.RateLimitCapacity)
+	memoryRateLimiter := ratelimiter.NewMemoryBucketRateLimiter(cfg.RateLimitCapacity, cfg.RateLimitReqPerSecond)
 	ratelimiter := ratelimiter.NewFallbackRateLimiter(redisRateLimiter, memoryRateLimiter)
 	rateLimitMiddleware := middleware.RateLimitMiddleware(ratelimiter)
 
