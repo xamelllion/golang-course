@@ -1,6 +1,6 @@
 # TestApp
 
-TestApp is a small service for reading GitHub repository information and managing repository subscriptions. The public interface is HTTP; internal services communicate through gRPC and Kafka, and use PostgreSQL for persistence.
+TestApp is a compact Go service for reading GitHub repository metadata and managing repository subscriptions. Gateway is the public HTTP edge; internal services communicate through gRPC and Kafka, with PostgreSQL for state and Redis for gateway cache and rate limiting.
 
 ## Architecture
 
@@ -8,15 +8,16 @@ TestApp is a small service for reading GitHub repository information and managin
 flowchart LR
     Client[HTTP client] --> Gateway[Gateway]
 
+    Gateway -->|cache / rate limit| Redis[(Redis)]
     Gateway -->|gRPC| Processor[Processor]
     Gateway -->|gRPC| Subscriber[Subscriber]
 
     Processor -->|SQL| ProcessorDB[(PostgreSQL)]
-    Processor -->|task request| Kafka[(Kafka)]
-    Kafka -->|task response| Processor
+    Processor -->|repo.tasks.request| Kafka[(Kafka)]
+    Kafka -->|repo.tasks.response| Processor
 
-    Kafka -->|task request| Collector[Collector]
-    Collector -->|task response| Kafka
+    Kafka -->|repo.tasks.request| Collector[Collector]
+    Collector -->|repo.tasks.response| Kafka
 
     Processor -->|gRPC| Subscriber
     Collector -->|gRPC| Subscriber
@@ -29,12 +30,13 @@ flowchart LR
     MigrateProcessor[processor migrations] --> ProcessorDB
 ```
 
-- **Gateway** exposes the HTTP API and Swagger UI.
-- **Processor** caches repository data. If the data is missing, it requests it through Kafka.
-- **Collector** reads repository data from the GitHub API, publishes task responses to Kafka, and periodically refreshes subscribed repositories.
-- **Subscriber** creates, deletes, and lists repository subscriptions.
-- **PostgreSQL** stores subscriptions and cached repository data.
-- **Kafka** decouples repository fetch requests from HTTP/gRPC request handling.
+- **Gateway** exposes the HTTP API and Swagger UI, logs requests, rate-limits clients by IP, and caches successful read responses in Redis.
+- **Processor** serves repository data from PostgreSQL. On a cache miss, it queues a Kafka fetch task and returns control to the caller.
+- **Collector** consumes fetch tasks, reads the GitHub API, publishes task responses, and refreshes subscribed repositories every 15 seconds.
+- **Subscriber** validates repositories through GitHub and stores subscriptions.
+- **Kafka** uses `repo.tasks.request` and `repo.tasks.response` to decouple repository fetches from HTTP/gRPC request handling.
+- **PostgreSQL** stores subscriptions and cached repository data. Migrations run automatically in Docker Compose.
+- **Redis** stores gateway response cache and distributed rate-limit buckets.
 
 ## Requirements
 
@@ -56,6 +58,14 @@ GITHUB_TOKEN=github_pat_...
 
 The `.env` file is used by Docker Compose for variable substitution.
 
+Gateway runtime settings are defined in `compose.yaml`:
+
+| Variable | Default | Description |
+|---|---:|---|
+| `RATELIMIT_CAPACITY` | `10` | Token bucket capacity per client IP |
+| `RATELIMIT_REQ_PER_SECOND` | `5.0` | Token refill rate per client IP |
+| `CACHE_TTL_SECONDS` | `60` | TTL for successful cached read responses |
+
 ## Running
 
 Start the whole stack:
@@ -68,6 +78,7 @@ After startup:
 
 - API: `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/docs/swagger/index.html`
+- Redis: internal service at `redis:6379`
 - Kafka from host: `localhost:9094`
 - Subscriber PostgreSQL from host: `localhost:5432`
 - Processor PostgreSQL from host: `localhost:5433`
@@ -99,7 +110,9 @@ Repository information can return:
 
 - `200 OK` when repository data is already available.
 - `202 Accepted` when the repository fetch task has been queued and data is still being prepared.
-- `400`, `404`, `502`, or `500` for invalid input, missing repositories, GitHub unavailability, or internal errors.
+- `400`, `404`, `429`, `502`, or `500` for invalid input, missing repositories, rate limiting, GitHub unavailability, or internal errors.
+
+Successful `GET /api/repositories/info` and `GET /api/subscriptions/info` responses are cached by endpoint and client IP for `CACHE_TTL_SECONDS`.
 
 Create a subscription:
 
@@ -129,11 +142,14 @@ curl http://localhost:8080/api/ping
 | Processor gRPC | `50051` | `50051` |
 | Collector gRPC | `50052` | `50052` |
 | Subscriber gRPC | `50053` | `50053` |
+| Redis | `6379` | `-` |
 | Kafka external listener | `9094` | `9094` |
 | Subscriber PostgreSQL | `5432` | `5432` |
 | Processor PostgreSQL | `5432` | `5433` |
 
 ## Development
+
+The module targets Go `1.25.0`.
 
 Run Go tests:
 
