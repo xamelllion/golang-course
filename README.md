@@ -2,6 +2,12 @@
 
 TestApp is a compact Go service for reading GitHub repository metadata and managing repository subscriptions. Gateway is the public HTTP edge; internal services communicate through gRPC and Kafka, with PostgreSQL for state and Redis for gateway cache and rate limiting.
 
+## Live example
+
+- API: [http://91.204.74.67](http://91.204.74.67)
+- Health check: [http://91.204.74.67/api/ping](http://91.204.74.67/api/ping)
+- Swagger UI: [http://91.204.74.67/docs/swagger/index.html](http://91.204.74.67/docs/swagger/index.html)
+
 ## Architecture
 
 ```mermaid
