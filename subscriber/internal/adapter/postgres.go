@@ -3,9 +3,9 @@ package adapter
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	subscriber "github.com/xamelllion/golang-course/subscriber/internal/adapter/postgres/sqlc"
 	"github.com/xamelllion/golang-course/subscriber/internal/domain"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type SubscriptionPostgresAdapter struct {

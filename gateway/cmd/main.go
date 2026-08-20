@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-redis/redis"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/cache"
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/collector"
 	"github.com/xamelllion/golang-course/gateway/internal/adapter/processor"
@@ -16,7 +17,6 @@ import (
 	"github.com/xamelllion/golang-course/gateway/internal/middleware"
 	"github.com/xamelllion/golang-course/gateway/internal/usecase"
 	"github.com/xamelllion/golang-course/internal/logger"
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 //	@title		TestApp API

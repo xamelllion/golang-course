@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	kafkaClient "github.com/xamelllion/golang-course/internal/kafka"
 	"github.com/xamelllion/golang-course/processor/internal/adapter"
 	"github.com/xamelllion/golang-course/processor/internal/config"
@@ -13,7 +14,6 @@ import (
 	controllerKafka "github.com/xamelllion/golang-course/processor/internal/controller/kafka"
 	"github.com/xamelllion/golang-course/processor/internal/usecase"
 	pbProcessor "github.com/xamelllion/golang-course/proto/processor"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

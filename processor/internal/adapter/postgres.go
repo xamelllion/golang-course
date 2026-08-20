@@ -4,11 +4,11 @@ import (
 	"context"
 	"log"
 
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	apperror "github.com/xamelllion/golang-course/internal/errors"
 	processor "github.com/xamelllion/golang-course/processor/internal/adapter/postgres/sqlc"
 	"github.com/xamelllion/golang-course/processor/internal/domain"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PostgresAdapter struct {

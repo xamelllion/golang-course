@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/xamelllion/golang-course/internal/github"
 	pbSubscriber "github.com/xamelllion/golang-course/proto/subscriber"
 	"github.com/xamelllion/golang-course/subscriber/internal/adapter"
 	"github.com/xamelllion/golang-course/subscriber/internal/config"
 	controller "github.com/xamelllion/golang-course/subscriber/internal/controller/grpc"
 	"github.com/xamelllion/golang-course/subscriber/internal/usecase"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 )
 
